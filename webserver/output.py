@@ -52,7 +52,7 @@ class RinexWrite:
         self.leapS = leapS
         if os.path.isfile(self.fname):
             fix_rinex(self.fname)
-        else:
+        if not os.path.isfile(self.fname):
             self.write_header()
 
     def write_header(self, *, version=3.01, file_type='O: Observation', satellite_type='M: Mixed GNSS',

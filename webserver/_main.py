@@ -25,7 +25,7 @@ def decode_msg(m, loc):
 
 app = Flask(__name__)
 api = Api(app)
-data_directory = '/home/raspex'
+data_directory = '/home/raspex/data'
 
 class Lidar(Resource):
     def post(self, loc):

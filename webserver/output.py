@@ -103,7 +103,7 @@ class RinexWrite:
                 f'0{len(packet.satellites):>3d}{" ":<44}\n'
         line = ''
         for s in packet.satellites:
-            snr0 = min(max(int(s[0].cno/6), 1), 9)
+            snr0 = s[0].cno
             if s[0].key == '':
                 pass
             else:

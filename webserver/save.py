@@ -2,6 +2,7 @@ import datetime as dt
 import os
 import struct
 from output import fix_hppos, RinexWrite
+from msg import RxmRawx
 
 
 def save_lidar(data, data_directory, loc):
@@ -25,7 +26,7 @@ def save_raw_gps(data, data_directory, loc, lat, lon):
     while counter < len(data):
         rcvTOW, week, leapS, numMeas = struct.unpack('<dHbB', data[counter:counter+12])
         counter = counter+12
-        wrtr = RinexWrite(os.path.join(data_directory, loc, 'rawgps'), lat, lon, week, rcvTOW, leapS, loc)
+        wrtr = RinexWrite(os.path.join(data_directory, loc, 'rawgps'), lat, lon, int(week), float(rcvTOW), int(leapS), loc)
         pseudorange, carrier_phase, doppler, gnssId, svId, sigId, cno = ([] for i in range(7))
         for i in range(numMeas):
             pr, cp, do, other = struct.unpack('ddfH', data[counter:counter+22])
@@ -37,8 +38,7 @@ def save_raw_gps(data, data_directory, loc, lat, lon):
             svId.append((other >> 6) & 0x3f)
             sigId.append((other >> 3) & 0x07)
             cno.append(other & 0x07)
-
-        wrtr.write_data()
+        p = RxmRawx(rcvTOW, week, leapS, numMeas, pseudorange, carrier_phase, doppler, gnssId, svId, sigId, cno)
 
 
 def save_gps_pos(data, data_directory, loc):

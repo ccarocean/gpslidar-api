@@ -31,8 +31,7 @@ class Lidar(Resource):
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
             save_lidar(request.data, '.', loc)
-            print(request.data)
-            print(loc)
+            print('LiDAR data from ' + loc)
             return '', 201
         else:
             return '', 404  # What error should this be?
@@ -42,8 +41,7 @@ class RawGPS(Resource):
     def post(self, loc):
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
-            print(request.data)
-            print(loc)
+            print('Raw GPS data from ' + loc)
             return '', 201
         else:
             return '', 404  # What error should this be?
@@ -54,8 +52,7 @@ class GPSPosition(Resource):
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
             save_gps_pos(request.data, '.', loc)
-            print(request.data)
-            print(loc)
+            print('GPS Position data from ' + loc)
             return '', 201
         else:
             return '', 404  # What error should this be?

@@ -40,9 +40,8 @@ def fix_hppos(f):
 class RinexWrite:
     def __init__(self, directory, lat, lon, alt, week, tow, leapS, station='harv'):
         self.t = dt.datetime(1980, 1, 6) + \
-                 dt.timedelta(days=7*week) + \
-                 dt.timedelta(seconds=tow)
-        print(tow)
+                 dt.timedelta(days=7*week, seconds=int(tow), microseconds=(tow-int(tow))*10**6)
+        
         self.fname = os.path.join(directory, self.t.strftime(station + '%j0.%yO'))
         self.station = station
         self.longname = _LOOKUP[station]

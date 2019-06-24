@@ -97,9 +97,9 @@ class RinexWrite:
 
     def write_data(self, packet):
         t = dt.datetime(1980, 1, 6) + \
-             dt.timedelta(days=7*packet.week, seconds=int(packet.rcvTow),
-                          microseconds=(packet.rcvTow - int(packet.rcvTow))*10**6)
-        epoch = f'> {t.year:4d} {t.month:02d} {t.day:02d} {t.hour:2d} {t.minute:2d} {t.second:11.7f}  ' \
+            dt.timedelta(days=7*packet.week, seconds=int(packet.rcvTow),
+                        microseconds=(packet.rcvTow - int(packet.rcvTow))*10**6)
+        epoch = f'> {t.year:4d} {t.month:02d} {t.day:02d} {t.hour:2d} {t.minute:2d} {t.second + t.microsecond*10**-6:11.7f}  ' \
                 f'0{len(packet.satellites):>3d}{" ":<44}\n'
         line = ''
         for s in packet.satellites:

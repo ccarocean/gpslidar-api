@@ -27,16 +27,7 @@ class RxmRawxData:
     gnssId: int
     svId: int
     sigId: int
-    freqId: int
-    locktime: int
     cno: int
-    prStdev: float
-    cpStdev: float
-    doStdev: float
-    subHalfCyc: bool
-    halfCyc: bool
-    cpValid: bool
-    prValid: bool
     key: str
 
 

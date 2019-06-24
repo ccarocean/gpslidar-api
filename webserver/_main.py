@@ -25,12 +25,13 @@ def decode_msg(m, loc):
 
 app = Flask(__name__)
 api = Api(app)
+data_directory = '/home/raspex'
 
 class Lidar(Resource):
     def post(self, loc):
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
-            save_lidar(request.data, '.', loc)
+            save_lidar(request.data, data_directory, loc)
             print('LiDAR data from ' + loc)
             return '', 201
         else:
@@ -51,7 +52,7 @@ class GPSPosition(Resource):
     def post(self, loc):
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
-            save_gps_pos(request.data, '.', loc)
+            save_gps_pos(request.data, data_directory, loc)
             print('GPS Position data from ' + loc)
             return '', 201
         else:

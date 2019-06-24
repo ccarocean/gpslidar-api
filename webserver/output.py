@@ -43,6 +43,7 @@ class RinexWrite:
                  dt.timedelta(days=7*week) + \
                  dt.timedelta(seconds=tow)
         self.fname = directory + self.t.strftime(station + '%j0.%yO')
+        print(self.fname)
         self.station = station
         self.longname = _LOOKUP[station]
         self.lat = lat

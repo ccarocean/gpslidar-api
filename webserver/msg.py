@@ -36,9 +36,9 @@ class RxmRawx(ReceivedPacket):
     longname = 'Multi GNSS raw measurement data'
 
     def __init__(self, rcvTOW, week, leapS, numMeas, pseudorange, carrier_phase, doppler, gnssId, svId, sigId, cno):
-        self._rcvTow = float(rcvTOW)
-        self._week = int(week)
-        self._leapS = int(leapS)
+        self._rcvTow = rcvTOW
+        self._week = week
+        self._leapS = leapS
         self._numMeas = numMeas
         dc = []
 

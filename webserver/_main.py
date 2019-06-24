@@ -46,7 +46,7 @@ class RawGPS(Resource):
     def post(self, loc):
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
-            lat, lon = latlon(loc)
+            lat, lon = latlon[loc]
             save_raw_gps(request.data, data_directory, loc, lat, lon)
             print('Raw GPS data from ' + loc)
             return '', 201

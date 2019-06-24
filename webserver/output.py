@@ -32,7 +32,7 @@ def fix_hppos(f):
         for i in d[:-1]:
             file.write(i)
         l = d[-1].split(' ')
-        if len(l) == 7:
+        if len(l) == 4:
             file.write(d[-1])
         file.truncate()
 
@@ -42,6 +42,7 @@ class RinexWrite:
         self.t = dt.datetime(1980, 1, 6) + \
                  dt.timedelta(days=7*week) + \
                  dt.timedelta(seconds=tow)
+        print(tow)
         self.fname = os.path.join(directory, self.t.strftime(station + '%j0.%yO'))
         self.station = station
         self.longname = _LOOKUP[station]

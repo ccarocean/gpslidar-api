@@ -39,6 +39,7 @@ def save_raw_gps(data, data_directory, loc, lat, lon):
             sigId.append((other >> 3) & 0x07)
             cno.append(other & 0x07)
         p = RxmRawx(rcvTOW, week, leapS, numMeas, pseudorange, carrier_phase, doppler, gnssId, svId, sigId, cno)
+        wrtr.write_data(p)
 
 
 def save_gps_pos(data, data_directory, loc):

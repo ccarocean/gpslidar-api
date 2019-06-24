@@ -30,6 +30,7 @@ setup(
         'pyjwt[crypto]',
         'flask',
         'flask-restful',
+        'dataclasses;python_version=="3.6"',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

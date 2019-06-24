@@ -14,7 +14,7 @@ def read_key(fname):
 
 keys = {'harv': read_key('../../lidar-read/harv.key.pub')}
 
-latlon = {'harv': (34.468333 * np.pi/180, (-120.671667+360) * np.pi/180)}
+latlon = {'harv': (34.468333 * np.pi/180, (-120.671667+360) * np.pi/180, 0)}
 
 
 def decode_msg(m, loc):
@@ -46,8 +46,8 @@ class RawGPS(Resource):
     def post(self, loc):
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
-            lat, lon = latlon[loc]
-            save_raw_gps(request.data, data_directory, loc, lat, lon)
+            lat, lon, alt = latlon[loc]
+            save_raw_gps(request.data, data_directory, loc, lat, lon, alt)
             print('Raw GPS data from ' + loc)
             return '', 201
         else:

@@ -19,14 +19,14 @@ def save_lidar(data, data_directory, loc):
             f.write(f'{i} {j}\n')
 
 
-def save_raw_gps(data, data_directory, loc, lat, lon):
+def save_raw_gps(data, data_directory, loc, lat, lon, alt):
     unix_time = struct.unpack('<q', data[0:8])[0]
     dayhour = dt.datetime(1970, 1, 1) + dt.timedelta(seconds=unix_time)
     counter = 8
     while counter < len(data):
         rcvTOW, week, leapS, numMeas = struct.unpack('<dHbB', data[counter:counter+12])
         counter = counter+12
-        wrtr = RinexWrite(os.path.join(data_directory, loc, 'rawgps'), lat, lon, int(week), float(rcvTOW), int(leapS), loc)
+        wrtr = RinexWrite(os.path.join(data_directory, loc, 'rawgps'), lat, lon, alt, int(week), float(rcvTOW), int(leapS), loc)
         pseudorange, carrier_phase, doppler, gnssId, svId, sigId, cno = ([] for i in range(7))
         for i in range(numMeas):
             pr, cp, do, other = struct.unpack('ddfH', data[counter:counter+22])

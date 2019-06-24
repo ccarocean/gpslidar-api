@@ -49,7 +49,7 @@ class RinexWrite:
         self.lon = lon
         self.alt = alt
         self.content = ''
-        self.leapS = int(leapS)
+        self.leapS = leapS
         if os.path.isfile(self.fname):
             fix_rinex(self.fname)
         else:

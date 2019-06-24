@@ -9,7 +9,6 @@ def save_lidar(data, data_directory, loc):
     dayhour = dt.datetime(1970, 1, 1) + dt.timedelta(seconds=unix_time)
     tvec, measvec = [], []
     num = (len(data)-8)/6
-    print(num)
     for i in range(int((len(data)-8)/6)):
         t, meas = struct.unpack('<LH', data[8+i*6:8+(i+1)*6])
         tvec.append(t)
@@ -20,20 +19,26 @@ def save_lidar(data, data_directory, loc):
 
 
 def save_raw_gps(data, data_directory, loc, lat, lon):
-    unix_time, rcvTOW, week, leapS, numMeas = struct.unpack('<qdHbB', data[0:8])[0]
-    wrtr = RinexWrite(os.path.join(data_directory, loc, 'rawgps'), lat, lon, week, rcvTOW, leapS, loc)
-    pseudorange, carrier_phase, doppler, gnssId, svId, sigId, cno = ([] for i in range(7))
-    for i in range(numMeas):
-        pr, cp, do, other = struct.unpack('ddfH', data[12+i*22:12+(i+1)*22])
-        pseudorange.append(pr)
-        carrier_phase.append(cp)
-        doppler.append(do)
-        gnssId.append((other >> 12) & 0x07)
-        svId.append((other >> 6) & 0x3f)
-        sigId.append((other >> 3) & 0x07)
-        cno.append(other & 0x07)
+    unix_time = struct.unpack('<q', data[0:8])[0]
+    dayhour = dt.datetime(1970, 1, 1) + dt.timedelta(seconds=unix_time)
+    counter = 8
+    while counter < len(data):
+        rcvTOW, week, leapS, numMeas = struct.unpack('<dHbB', data[counter:counter+12])
+        counter = counter+12
+        wrtr = RinexWrite(os.path.join(data_directory, loc, 'rawgps'), lat, lon, week, rcvTOW, leapS, loc)
+        pseudorange, carrier_phase, doppler, gnssId, svId, sigId, cno = ([] for i in range(7))
+        for i in range(numMeas):
+            pr, cp, do, other = struct.unpack('ddfH', data[counter:counter+22])
+            counter = counter + 22
+            pseudorange.append(pr)
+            carrier_phase.append(cp)
+            doppler.append(do)
+            gnssId.append((other >> 12) & 0x07)
+            svId.append((other >> 6) & 0x3f)
+            sigId.append((other >> 3) & 0x07)
+            cno.append(other & 0x07)
 
-    wrtr.write_data()
+        wrtr.write_data()
 
 
 def save_gps_pos(data, data_directory, loc):

@@ -2,6 +2,7 @@ from flask_restful import request, Resource, Api
 from flask import Flask
 import jwt
 import datetime as dt
+import numpy as np
 from save import save_lidar, save_gps_pos, save_raw_gps
 
 
@@ -12,6 +13,8 @@ def read_key(fname):
 
 
 keys = {'harv': read_key('../../lidar-read/harv.key.pub')}
+
+latlon = {'harv': (34.468333 * np.pi/180, (-120.671667+360) * np.pi/180)}
 
 
 def decode_msg(m, loc):
@@ -26,6 +29,7 @@ def decode_msg(m, loc):
 app = Flask(__name__)
 api = Api(app)
 data_directory = '/home/raspex/data'
+
 
 class Lidar(Resource):
     def post(self, loc):
@@ -42,6 +46,8 @@ class RawGPS(Resource):
     def post(self, loc):
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
+            lat, lon = latlon(loc)
+            save_raw_gps(request.data, data_directory, loc, lat, lon)
             print('Raw GPS data from ' + loc)
             return '', 201
         else:

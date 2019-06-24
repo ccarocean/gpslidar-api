@@ -10,7 +10,7 @@ def fix_rinex(f):
     num_data = 132
     with open(f, 'r+') as file:
         d = file.readlines()
-        if len(d) <= 14:
+        if len(d) <= 23:
             os.remove(f)
         else:
             file.seek(0)
@@ -42,8 +42,7 @@ class RinexWrite:
         self.t = dt.datetime(1980, 1, 6) + \
                  dt.timedelta(days=7*week) + \
                  dt.timedelta(seconds=tow)
-        self.fname = directory + self.t.strftime(station + '%j0.%yO')
-        print(self.fname)
+        self.fname = os.path.join(directory, self.t.strftime(station + '%j0.%yO'))
         self.station = station
         self.longname = _LOOKUP[station]
         self.lat = lat

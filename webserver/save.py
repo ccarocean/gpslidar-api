@@ -58,7 +58,6 @@ def save_gps_pos(data, data_directory, loc):
         dt.timedelta(days=7*week) + \
         dt.timedelta(microseconds=itow*1000)
     fname = os.path.join(data_directory, loc, 'position', t.strftime('%Y-%m-%d.txt'))
-    print(fname)
     if os.path.isfile(fname):  # If file exists make sure it doesnt need to be fixed
         fix_hppos(fname)
     with open(fname, 'a+') as f:

@@ -2,3 +2,4 @@ pyjwt[crypto]
 flask
 flask-restful
 dataclasses;python_version=="3.6"
+numpy

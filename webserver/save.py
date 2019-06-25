@@ -53,7 +53,7 @@ def save_gps_pos(data, data_directory, loc):
     dayhour = dt.datetime(1970, 1, 1) + dt.timedelta(seconds=unix_time)
     t = dt.datetime(1980, 1, 6) + \
         dt.timedelta(days=7*week) + \
-        dt.timedelta(seconds=itow)
+        dt.timedelta(microseconds=itow*1000)
     today = dt.datetime(t.year, t.month, t.day)
     secs = (t-today).total_seconds()
     fname = os.path.join(data_directory, loc, 'position', dayhour.strftime('%Y-%m-%d.txt'))

@@ -31,6 +31,7 @@ setup(
         'flask',
         'flask-restful',
         'dataclasses;python_version=="3.6"',
+        'numpy',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

@@ -108,8 +108,8 @@ class RinexWrite:
         # TODO: check frequency instead of just doing one and two - could only be 2
         t = dt.datetime(1980, 1, 6) + \
             dt.timedelta(days=7*packet.week, seconds=int(packet.rcvTow),
-                         microseconds=(packet.rcvTow - int(packet.rcvTow))*10**6) \
-            - dt.timedelta(seconds=packet.leapS)
+                         microseconds=(packet.rcvTow - int(packet.rcvTow))*10**6) - \
+            dt.timedelta(seconds=packet.leapS)
         epoch = f'> {t.year:4d} {t.month:02d} {t.day:02d} {t.hour:2d} {t.minute:2d} ' \
                 f'{t.second + t.microsecond*10**-6:11.7f}  0{len(packet.satellites):>3d}{" ":<44}\n'
         line = ''

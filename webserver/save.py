@@ -22,16 +22,21 @@ def save_lidar(data, data_directory, loc):
 
 def save_raw_gps(data, data_directory, loc, lat, lon, alt):
     """ Function for saving raw GPS data to a file. """
-    # TODO: something is wrong with the timing here i believe
-    unix_time = struct.unpack('<q', data[0:8])[0]  # First thing is unix time
-    dayhour = dt.datetime(1970, 1, 1) + dt.timedelta(seconds=unix_time)  # Find day and hour
-    counter = 8
+    # TODO: too slow
+    counter = 0
+    end = len(data)
     # Do the rinex thing
-    while counter < len(data):
+    while counter < end:
         rcvTOW, week, leapS, numMeas = struct.unpack('<dHbB', data[counter:counter+12])
         counter = counter+12
         wrtr = RinexWrite(os.path.join(data_directory, loc, 'rawgps'), lat, lon, alt, week, rcvTOW, leapS, loc)
-        pseudorange, carrier_phase, doppler, gnssId, svId, sigId, cno = ([] for i in range(7))
+        pseudorange = []
+        carrier_phase = []
+        doppler = []
+        gnssId = []
+        svId = []
+        sigId = []
+        cno = []
         for i in range(numMeas):
             pr, cp, do, other = struct.unpack('ddfH', data[counter:counter+22])
             counter = counter + 22
@@ -48,17 +53,13 @@ def save_raw_gps(data, data_directory, loc, lat, lon, alt):
 
 def save_gps_pos(data, data_directory, loc):
     """ Function for saving the gps position data. """
-    # TODO: something is wrong with timing. Better way to do it?
-    unix_time, itow, week, lon, lat, height = struct.unpack('<qIHddd', data)
-    dayhour = dt.datetime(1970, 1, 1) + dt.timedelta(seconds=unix_time)
+    itow, week, lon, lat, height = struct.unpack('<IHddd', data)
     t = dt.datetime(1980, 1, 6) + \
         dt.timedelta(days=7*week) + \
         dt.timedelta(microseconds=itow*1000)
-    today = dt.datetime(t.year, t.month, t.day)
-    secs = (t-today).total_seconds()
-    fname = os.path.join(data_directory, loc, 'position', dayhour.strftime('%Y-%m-%d.txt'))
+    fname = os.path.join(data_directory, loc, 'position', t.strftime('%Y-%m-%d.txt'))
     print(fname)
     if os.path.isfile(fname):  # If file exists make sure it doesnt need to be fixed
         fix_hppos(fname)
     with open(fname, 'a+') as f:
-        f.write(f'{secs} {lat} {lon} {height}\n')  # Write
+        f.write(f'{t} {lat} {lon} {height}\n')  # Write

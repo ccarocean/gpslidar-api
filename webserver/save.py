@@ -6,13 +6,14 @@ from msg import RxmRawx
 
 
 def save_lidar(data, data_directory, loc):
-    unix_time = struct.unpack('<q', data[0:8])[0]
-    dayhour = dt.datetime(1970, 1, 1) + dt.timedelta(seconds=unix_time)
-    tvec, measvec = [], []
-    num = (len(data)-8)/6
-    for i in range(int((len(data)-8)/6)):
-        t, meas = struct.unpack('<LH', data[8+i*6:8+(i+1)*6])
-        tvec.append(t)
+    """ Function for saving lidar data from API. """
+    unix_time = struct.unpack('<q', data[0:8])[0]  # First thing is unix time
+    dayhour = dt.datetime(1970, 1, 1) + dt.timedelta(seconds=unix_time)  # Find day and hour
+    tvec, measvec = [], []  # Initialization
+    num = (len(data)-8)/6  # Number of measurements
+    for i in range(int(num)):
+        t, meas = struct.unpack('<LH', data[8+i*6:8+(i+1)*6])  # Unpack data
+        tvec.append(dayhour + dt.timedelta(microseconds=t))
         measvec.append(meas)
     with open(os.path.join(data_directory, loc, 'lidar', dayhour.strftime('%Y-%m-%d.txt')), 'a+') as f:
         for i, j in zip(tvec, measvec):
@@ -20,9 +21,12 @@ def save_lidar(data, data_directory, loc):
 
 
 def save_raw_gps(data, data_directory, loc, lat, lon, alt):
-    unix_time = struct.unpack('<q', data[0:8])[0]
-    dayhour = dt.datetime(1970, 1, 1) + dt.timedelta(seconds=unix_time)
+    """ Function for saving raw GPS data to a file. """
+    # TODO: something is wrong with the timing here i believe
+    unix_time = struct.unpack('<q', data[0:8])[0]  # First thing is unix time
+    dayhour = dt.datetime(1970, 1, 1) + dt.timedelta(seconds=unix_time)  # Find day and hour
     counter = 8
+    # Do the rinex thing
     while counter < len(data):
         rcvTOW, week, leapS, numMeas = struct.unpack('<dHbB', data[counter:counter+12])
         counter = counter+12
@@ -43,6 +47,8 @@ def save_raw_gps(data, data_directory, loc, lat, lon, alt):
 
 
 def save_gps_pos(data, data_directory, loc):
+    """ Function for saving the gps position data. """
+    # TODO: something is wrong with timing. Better way to do it?
     unix_time, itow, week, lon, lat, height = struct.unpack('<qIHddd', data)
     dayhour = dt.datetime(1970, 1, 1) + dt.timedelta(seconds=unix_time)
     t = dt.datetime(1980, 1, 6) + \
@@ -52,7 +58,7 @@ def save_gps_pos(data, data_directory, loc):
     secs = (t-today).total_seconds()
     fname = os.path.join(data_directory, loc, 'position', dayhour.strftime('%Y-%m-%d.txt'))
     print(fname)
-    if os.path.isfile(fname):
+    if os.path.isfile(fname):  # If file exists make sure it doesnt need to be fixed
         fix_hppos(fname)
     with open(fname, 'a+') as f:
-        f.write(f'{secs} {lat} {lon} {height}\n')
+        f.write(f'{secs} {lat} {lon} {height}\n')  # Write

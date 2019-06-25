@@ -3,24 +3,29 @@ from dataclasses import dataclass
 from collections import defaultdict
 
 
+# Lookup table for GPS codes
 _LOOKUP_GPS = {0: 'G', 1: 'S', 2: 'E', 3: 'C', 6: 'R'}
 
 
 def x2bool(num, val):
+    """ Function for taking bits and returning boolean data. """
     return tuple((val & 2**i) != 0 for i in range(num-1, -1, -1))
 
 
 class Packet(ABC):
+    """ Packet class for inheritance. """
     id = 0x0000
     longname = 'Unknown Packet'
 
 
 class ReceivedPacket(Packet, ABC):
+    """ Received packet class for inheritance. """
     pass
 
 
 @dataclass(frozen=True)
 class RxmRawxData:
+    """ Dataclass for raw measurement data from single satellite. """
     prMeas: float
     cpMeas: float
     doMeas: float
@@ -32,6 +37,7 @@ class RxmRawxData:
 
 
 class RxmRawx(ReceivedPacket):
+    """ Class for handling raw data packet from api and returning a data structure containing an entire measurement. """
     id = 0x1502
     longname = 'Multi GNSS raw measurement data'
 
@@ -43,6 +49,7 @@ class RxmRawx(ReceivedPacket):
         dc = []
 
         for i in range(self._numMeas):
+            # Create key for RINEX
             id_ = _LOOKUP_GPS[gnssId[i]]
             if id_ == 'R' and svId[i] == 255:
                 key = ''
@@ -53,8 +60,11 @@ class RxmRawx(ReceivedPacket):
                     id2 = svId[i]
                 key = f'{id_}{id2:02d}'
 
+            # Add dataclass for satellite data to list
             dc.append(RxmRawxData(pseudorange[i], carrier_phase[i], doppler[i], gnssId[i], svId[i], sigId[i], cno[i],
                                         key))
+
+        # Sort list based on satellite and combine L1 and L2 measurements for same satellite.
         dd = defaultdict(list)
         self._satellites = []
         for i in dc:

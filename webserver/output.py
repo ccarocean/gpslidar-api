@@ -2,42 +2,48 @@ import datetime as dt
 import os
 import numpy as np
 
+
+# Lookup tables for names and GPS identifiers.
 _LOOKUP = {'harv': 'Harvest Oil Platform', 'cata': 'Catalina Island', 'ucbo': 'University of Colorado Boulder'}
 _LOOKUP_GPS = {0: 'G', 1: 'S', 2: 'E', 3: 'C', 6: 'R'}
 
 
 def fix_rinex(f):
+    """ function for checking and fixing a rinex file in case something happened to the process mid write. """
     num_data = 132
     with open(f, 'r+') as file:
         d = file.readlines()
-        if len(d) <= 23:
+        if len(d) <= 23:  # Ensure file has more than just header, otherwise delete
             os.remove(f)
         else:
             file.seek(0)
             ind = [i for i, s in enumerate(d) if '>' in s]
             ind_lastmeas = ind[-1]
-            for i in d[:ind_lastmeas]:
+            for i in d[:ind_lastmeas]:  # Write all but last measurement
                 file.write(i)
             numsats = int(d[ind_lastmeas].split()[-1])
-            if numsats == (len(d)-ind_lastmeas-1) and len(d[-1]) == num_data:
+            if numsats == (len(d)-ind_lastmeas-1) and len(d[-1]) == num_data:   # Ensure last measurement is good before
+                                                                                # Writing it.
                 for i in d[ind_lastmeas:]:
                     file.write(i)
-            file.truncate()
+            file.truncate()  # Delete unwritten data
 
 
 def fix_hppos(f):
+    """ function to check and fix a high precision position file. """
     with open(f, 'r+') as file:
         d = file.readlines()
         file.seek(0)
-        for i in d[:-1]:
+        for i in d[:-1]:  # Write all but last line
             file.write(i)
         l = d[-1].split(' ')
-        if len(l) == 4:
+        if len(l) == 4:  # If final line is complete, write it too
             file.write(d[-1])
-        file.truncate()
+        file.truncate()  # Remove bad stuff
 
 
 class RinexWrite:
+    """ Class for writing a rinex file using raw gps data from the F9P. """
     def __init__(self, directory, lat, lon, alt, week, tow, leapS, station='harv'):
         self.t = dt.datetime(1980, 1, 6) + \
                  dt.timedelta(days=7*week, seconds=int(tow), microseconds=(tow-int(tow))*10**6)
@@ -59,6 +65,8 @@ class RinexWrite:
                      run_by='GPSLiDAR', organization='CCAR', observer='Adam Dodge', agency='CCAR', receiver_num='1',
                      receiver_type='GENERIC_P1', receiver_vers='1.0.0', antenna_number=1, antenna_type='RTK2-F9P',
                      delta_pos=[0,0,0]):
+        """ Function to write RINEX Header. A lot is hard coded so if someone wanted to use it for something else they
+            would need to make a relatively large amount of changes. """
         markerstr = 'GPS LiDAR System at ' + self.longname
         if not os.path.isfile(self.fname):
             tstr = self.t.strftime('%Y%m%d %H%M%S')
@@ -96,11 +104,13 @@ class RinexWrite:
                 f.write(header)
 
     def write_data(self, packet):
+        """ Function to write gps measurement to RINEX file. """
+        # TODO: check frequency instead of just doing one and two - could only be 2
         t = dt.datetime(1980, 1, 6) + \
             dt.timedelta(days=7*packet.week, seconds=int(packet.rcvTow),
-                        microseconds=(packet.rcvTow - int(packet.rcvTow))*10**6)
-        epoch = f'> {t.year:4d} {t.month:02d} {t.day:02d} {t.hour:2d} {t.minute:2d} {t.second + t.microsecond*10**-6:11.7f}  ' \
-                f'0{len(packet.satellites):>3d}{" ":<44}\n'
+                         microseconds=(packet.rcvTow - int(packet.rcvTow))*10**6)
+        epoch = f'> {t.year:4d} {t.month:02d} {t.day:02d} {t.hour:2d} {t.minute:2d} ' \
+                f'{t.second + t.microsecond*10**-6:11.7f}  0{len(packet.satellites):>3d}{" ":<44}\n'
         line = ''
         for s in packet.satellites:
             snr0 = s[0].cno
@@ -109,7 +119,7 @@ class RinexWrite:
             else:
                 line = line + f'{s[0].key:3s}{s[0].prMeas:>14.3f} {snr0:>1d}{s[0].cpMeas:>14.3f} {snr0:>1d}' \
                               f'{s[0].doMeas:>14.3f} {snr0:>1d}{s[0].cno:>14.3f} {snr0:>1d}'
-            if len(s) == 2:
+            if len(s) == 2:  # If L1 and L2 Frequencies
                 snr1 = min(max(int(s[1].cno/6), 1), 9)
                 line = line + f'{s[1].prMeas:>14.3f} {snr1:>1d}{s[1].cpMeas:>14.3f} {snr1:>1d}{s[1].doMeas:>14.3f} ' \
                               f'{snr1:>1d}{s[1].cno:>14.3f} {snr1:>1d}\n'

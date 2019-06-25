@@ -37,7 +37,7 @@ def fix_hppos(f):
         for i in d[:-1]:  # Write all but last line
             file.write(i)
         l = d[-1].split(' ')
-        if len(l) == 4:  # If final line is complete, write it too
+        if len(l) == 5:  # If final line is complete, write it too
             file.write(d[-1])
         file.truncate()  # Remove bad stuff
 

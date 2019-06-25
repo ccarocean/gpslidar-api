@@ -29,7 +29,6 @@ def save_raw_gps(data, data_directory, loc, lat, lon, alt):
     # Do the rinex thing
     while counter < len(data):
         rcvTOW, week, leapS, numMeas = struct.unpack('<dHbB', data[counter:counter+12])
-        print(rcvTOW)
         counter = counter+12
         wrtr = RinexWrite(os.path.join(data_directory, loc, 'rawgps'), lat, lon, alt, week, rcvTOW, leapS, loc)
         pseudorange, carrier_phase, doppler, gnssId, svId, sigId, cno = ([] for i in range(7))

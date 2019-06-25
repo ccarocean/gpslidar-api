@@ -33,7 +33,7 @@ def decode_msg(m, loc):
 # Create application and api
 app = Flask(__name__)
 api = Api(app)
-data_directory = '/home/raspex/data'  # Directory with data
+data_directory = '/home/ccaruser/data'  # Directory with data
 
 
 class Lidar(Resource):

@@ -1,7 +1,7 @@
 from flask_restful import Api
 from flask import Flask
 import argparse
-from resources import Lidar, RawGPS, GPSPosition
+from .resources import Lidar, RawGPS, GPSPosition
 
 
 def main():

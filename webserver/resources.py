@@ -1,5 +1,5 @@
 from flask_restful import request, Resource
-from save import save_lidar, save_gps_pos, save_raw_gps
+from .save import save_lidar, save_gps_pos, save_raw_gps
 import sys
 import jwt
 import datetime as dt

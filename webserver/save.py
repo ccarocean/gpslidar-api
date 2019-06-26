@@ -2,8 +2,8 @@ import datetime as dt
 import os
 import struct
 import sys
-from output import fix_hppos, RinexWrite
-from msg import RxmRawx
+from .output import fix_hppos, RinexWrite
+from .msg import RxmRawx
 
 
 def save_lidar(data, data_directory, loc):

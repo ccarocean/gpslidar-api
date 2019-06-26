@@ -16,7 +16,7 @@ def read_key(fname):
 
 
 # Station lookup
-_STATIONS = {'harv': {'public-key':   read_key('../../lidar-read/harv.key.pub'),
+_STATIONS = {'harv': {'public-key':   read_key('../lidar-read/harv.key.pub'),
                       'private-key':  read_key('../../lidar-read/harv.key'),
                       'lat':          34.468333,
                       'lon':          360 - 120.671667,

@@ -40,11 +40,13 @@ def decode_msg(m, loc):
 
 class Lidar(Resource):
     """ Class for handling LiDAR post api request. """
-    def post(self, loc, dir):
-        data_directory = dir
+    def __init__(self, directory):
+        self._directory = directory
+
+    def post(self, loc):
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
-            save_lidar(request.data, data_directory, loc)
+            save_lidar(request.data, self._directory, loc)
             print('LiDAR data from ' + loc)
             return '', 201
         else:
@@ -53,11 +55,13 @@ class Lidar(Resource):
 
 class RawGPS(Resource):
     """ Class for handling Raw GPS post api request. """
+    def __init__(self, directory):
+        self._directory = directory
+
     def post(self, loc, dir):
-        data_directory = dir
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
-            save_raw_gps(request.data, data_directory, loc,
+            save_raw_gps(request.data, self._directory, loc,
                          _STATIONS[loc]['lat'], _STATIONS[loc]['lon'], _STATIONS[loc]['alt'])
             print('Raw GPS data from ' + loc)
             return '', 201
@@ -67,11 +71,13 @@ class RawGPS(Resource):
 
 class GPSPosition(Resource):
     """ Class for handling GPS Position post api request. """
-    def post(self, loc, dir):
-        data_directory = dir
+    def __init__(self, directory):
+        self._directory = directory
+
+    def post(self, loc):
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
-            save_gps_pos(request.data, data_directory, loc)
+            save_gps_pos(request.data, self._directory, loc)
             print('GPS Position data from ' + loc)
             return '', 201
         else:

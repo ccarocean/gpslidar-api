@@ -73,9 +73,9 @@ class RinexWrite:
             tstr = self.t.strftime('%Y%m%d %H%M%S')
             # TODO: Fix header (not working in readers)
             r = 6371000 + self.alt
-            x = r * np.cos(self.lat) * np.cos(self.lon)
-            y = r * np.cos(self.lat) * np.sin(self.lon)
-            z = r * np.sin(self.lat)
+            x = r * np.cos(self.lat * np.pi/180) * np.cos(self.lon * np.pi/180)
+            y = r * np.cos(self.lat * np.pi/180) * np.sin(self.lon * np.pi/180)
+            z = r * np.sin(self.lat * np.pi/180)
             header = f'{version:>9.2f}{" ":<11s}{file_type:<20s}{satellite_type:<20s}{"RINEX VERSION / TYPE":<20s}\n' + \
                      f'{run_by:<20s}{organization:<20s}{tstr:<16s}UTC {"PGM / RUN BY / DATE":<20s}\n' + \
                      f'{markerstr:<60}{"MARKER NAME":<20s}\n' + \

@@ -2,7 +2,6 @@ from flask_restful import request, Resource
 from save import save_lidar, save_gps_pos, save_raw_gps
 import sys
 import jwt
-import numpy as np
 import datetime as dt
 
 def read_key(fname):
@@ -16,18 +15,20 @@ def read_key(fname):
     return key
 
 
-# Lookup table for keys
-_LOOKUP_KEYS = {'harv': read_key('../../lidar-read/harv.key.pub')}
-
-
-# Lookup table for latitude, longitude, and altitude
-_LOOKUP_LATLONALT = {'harv': (34.468333 * np.pi / 180, (-120.671667 + 360) * np.pi / 180, 0)}
+# Station lookup
+_STATIONS = {'harv': {'public-key':   read_key('../../lidar-read/harv.key.pub'),
+                      'private-key':  read_key('../../lidar-read/harv.key'),
+                      'lat':          34.468333,
+                      'lon':          360 - 120.671667,
+                      'alt':          0
+                      }
+             }
 
 
 def decode_msg(m, loc):
     """ Function to decode message with the key. """
     try:
-        time = jwt.decode(m, _LOOKUP_KEYS[loc], algorithm='RS256')['t']
+        time = jwt.decode(m, _STATIONS[loc]['public-key'], algorithm='RS256')['t']
         td = ((dt.datetime.utcnow() - dt.datetime(1970, 1, 1)).total_seconds() - float(time))
     except:
         return False
@@ -55,8 +56,8 @@ class RawGPS(Resource):
         data_directory = kwargs['dir']
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
-            lat, lon, alt = _LOOKUP_LATLONALT[loc]
-            save_raw_gps(request.data, data_directory, loc, lat, lon, alt)
+            save_raw_gps(request.data, data_directory, loc,
+                         _STATIONS[loc]['lat'], _STATIONS[loc]['lon'], _STATIONS[loc]['alt'])
             print('Raw GPS data from ' + loc)
             return '', 201
         else:

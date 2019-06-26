@@ -58,7 +58,7 @@ class RawGPS(Resource):
     def __init__(self, directory):
         self._directory = directory
 
-    def post(self, loc, dir):
+    def post(self, loc):
         signature = request.headers['Bearer']
         if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
             save_raw_gps(request.data, self._directory, loc,

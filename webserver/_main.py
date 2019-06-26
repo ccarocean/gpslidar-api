@@ -3,13 +3,18 @@ from flask import Flask
 import jwt
 import datetime as dt
 import numpy as np
+import sys
 from save import save_lidar, save_gps_pos, save_raw_gps
 
 
 def read_key(fname):
     """ Function to read key from file. """
-    with open(fname, 'r') as f:
-        key = f.read()
+    try:
+        with open(fname, 'r') as f:
+            key = f.read()
+    except FileNotFoundError:
+        print('Incorrect key file location. ')
+        sys.exit(0)
     return key
 
 
@@ -23,8 +28,11 @@ _LOOKUP_LATLONALT = {'harv': (34.468333 * np.pi / 180, (-120.671667 + 360) * np.
 
 def decode_msg(m, loc):
     """ Function to decode message with the key. """
-    time = jwt.decode(m, _LOOKUP_KEYS[loc], algorithm='RS256')['t']
-    td = ((dt.datetime.utcnow() - dt.datetime(1970, 1, 1)).total_seconds() - float(time))
+    try:
+        time = jwt.decode(m, _LOOKUP_KEYS[loc], algorithm='RS256')['t']
+        td = ((dt.datetime.utcnow() - dt.datetime(1970, 1, 1)).total_seconds() - float(time))
+    except:
+        return False
     if td < 10:
         return True
     return False

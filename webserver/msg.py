@@ -7,11 +7,6 @@ from collections import defaultdict
 _LOOKUP_GPS = {0: 'G', 1: 'S', 2: 'E', 3: 'C', 6: 'R'}
 
 
-def x2bool(num, val):
-    """ Function for taking bits and returning boolean data. """
-    return tuple((val & 2**i) != 0 for i in range(num-1, -1, -1))
-
-
 class Packet(ABC):
     """ Packet class for inheritance. """
     id = 0x0000

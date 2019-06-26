@@ -1,5 +1,6 @@
 import datetime as dt
 import os
+import sys
 import numpy as np
 
 
@@ -22,8 +23,8 @@ def fix_rinex(f):
             for i in d[:ind_lastmeas]:  # Write all but last measurement
                 file.write(i)
             numsats = int(d[ind_lastmeas].split()[-1])
-            if numsats == (len(d)-ind_lastmeas-1) and len(d[-1]) == num_data:   # Ensure last measurement is good before
-                                                                                # Writing it.
+            # Ensure last measurement is good before writing it.
+            if numsats == (len(d)-ind_lastmeas-1) and len(d[-1]) == num_data:
                 for i in d[ind_lastmeas:]:
                     file.write(i)
             file.truncate()  # Delete unwritten data
@@ -100,8 +101,12 @@ class RinexWrite:
                      f'{self.leapS:>6d}{" ":>54s}{"LEAP SECONDS":<20s}\n' + \
                      f'{" ":>60s}{"END OF HEADER":<20s}\n'
 
-            with open(self.fname, 'w') as f:
-                f.write(header)
+            try:
+                with open(self.fname, 'w') as f:
+                    f.write(header)
+            except FileNotFoundError:
+                print('Bad data directory. Try again.')
+                sys.exit(0)
 
     def write_data(self, packet):
         """ Function to write gps measurement to RINEX file. """
@@ -128,5 +133,9 @@ class RinexWrite:
             else:
                 line = line + f'{0.0:>14.3f}  {0.0:>14.3f}  {0.0:>14.3f}  {0.0:>14.3f}  \n'
 
-        with open(self.fname, 'a') as f:
-            f.write(epoch + line)
+        try:
+            with open(self.fname, 'a') as f:
+                f.write(epoch + line)
+        except FileNotFoundError:
+            print('Bad data directory. Try again.')
+            sys.exit(0)

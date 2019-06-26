@@ -4,6 +4,7 @@ import sys
 import jwt
 import datetime as dt
 
+
 def read_key(fname):
     """ Function to read key from file. """
     try:

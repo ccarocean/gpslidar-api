@@ -1,6 +1,6 @@
 from flask_restful import request, Resource
 from .save import save_lidar, save_gps_pos, save_raw_gps
-import sys
+import os
 import jwt
 import datetime as dt
 
@@ -12,7 +12,7 @@ def read_key(fname):
             key = f.read()
     except FileNotFoundError:
         print('Incorrect key file location. ')
-        sys.exit(0)
+        os._exit(1)
     return key
 
 

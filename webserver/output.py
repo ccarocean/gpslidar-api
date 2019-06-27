@@ -22,7 +22,11 @@ def fix_rinex(f):
             ind_lastmeas = ind[-1]
             for i in d[:ind_lastmeas]:  # Write all but last measurement
                 file.write(i)
-            numsats = int(d[ind_lastmeas].split()[-1])
+            try:
+                numsats = int(d[ind_lastmeas].split()[-1])
+            except ValueError:
+                file.truncate()
+                return
             # Ensure last measurement is good before writing it.
             if numsats == (len(d)-ind_lastmeas-1) and len(d[-1]) == num_data:
                 for i in d[ind_lastmeas:]:

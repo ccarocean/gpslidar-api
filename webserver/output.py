@@ -111,6 +111,8 @@ class RinexWrite:
     def write_data(self, packet):
         """ Function to write gps measurement to RINEX file. """
         # TODO: check frequency instead of just doing one and two - could only be 2
+        if not packet.satellites:
+            return  # No satellites
         t = dt.datetime(1980, 1, 6) + \
             dt.timedelta(days=7*packet.week, seconds=int(packet.rcvTow),
                          microseconds=(packet.rcvTow - int(packet.rcvTow))*10**6) - \

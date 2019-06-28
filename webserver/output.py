@@ -61,8 +61,10 @@ class RinexWrite:
         self.alt = alt
         self.content = ''
         self.leapS = leapS
+        print('Output 64:', dt.datetime.utcnow())
         if os.path.isfile(self.fname):
             fix_rinex(self.fname)
+        print('Output 67:', dt.datetime.utcnow())
         if not os.path.isfile(self.fname):
             self.write_header()
 

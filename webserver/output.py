@@ -61,9 +61,6 @@ class RinexWrite:
         self.alt = alt
         self.content = ''
         self.leapS = leapS
-        if os.path.isfile(self.fname):
-            pass
-            #fix_rinex(self.fname)
         if not os.path.isfile(self.fname):
             self.write_header()
 

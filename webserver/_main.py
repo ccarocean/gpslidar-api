@@ -20,4 +20,4 @@ def main():
     api.add_resource(Lidar, '/lidar/<string:loc>', resource_class_kwargs={'directory': args.directory})
     api.add_resource(RawGPS, '/rawgps/<string:loc>', resource_class_kwargs={'directory': args.directory})
     api.add_resource(GPSPosition, '/posgps/<string:loc>', resource_class_kwargs={'directory': args.directory})
-    app.run(debug=True)  # Run web server
+    app.run(debug=False)  # Run web server

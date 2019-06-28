@@ -67,7 +67,7 @@ def save_gps_pos(data, data_directory, loc):
         fix_hppos(f_name)
     try:
         with open(f_name, 'a+') as f:
-            f.write(f'{t} {lat} {lon} {height}\n')  # Write
+            f.write(f'{t} {lat} {lon} {height}\n')  # Write to file
     except FileNotFoundError:
         print('Data directory is bad. Try again. ')
         sys.exit(0)

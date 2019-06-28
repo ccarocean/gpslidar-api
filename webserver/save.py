@@ -35,12 +35,12 @@ def save_raw_gps(data, data_directory, loc, lat, lon, alt):
     end = len(data)
     # Do the rinex thing
     while counter < end:
-        print('Save 41:', dt.datetime.utcnow())
         rcv_tow, week, leap_s, num_meas = struct.unpack('<dHbB', data[counter:counter+12])
         counter += 12
+        print('Save 40:', dt.datetime.utcnow())
         writer = RinexWrite(os.path.join(data_directory, loc, 'rawgps'), lat, lon, alt, week, rcv_tow, leap_s, loc)
+        print('Save 42:', dt.datetime.utcnow())
         pseudorange, carrier_phase, doppler, gnss_id, sv_id, sig_id, cno = [], [], [], [], [], [], []
-        print('Save 43:', dt.datetime.utcnow())
         for i in range(num_meas):
             pr, cp, do, other = struct.unpack('ddfH', data[counter:counter+22])
             counter += 22
@@ -51,7 +51,6 @@ def save_raw_gps(data, data_directory, loc, lat, lon, alt):
             sv_id.append((other >> 6) & 0x3f)
             sig_id.append((other >> 3) & 0x07)
             cno.append(other & 0x07)
-        print('Save 62:', dt.datetime.utcnow())
         p = RxmRawx(rcv_tow, week, leap_s, num_meas, pseudorange, carrier_phase, doppler, gnss_id, sv_id, sig_id, cno)
         writer.write_data(p)
 

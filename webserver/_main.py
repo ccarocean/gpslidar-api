@@ -14,16 +14,18 @@ def main():
                              ' for data types.')
     args = parser.parse_args()
 
+    dname = '/home/ccaruser/gpslidar.db'
+
     # Create database
-    conn = sqlite3.connect('/home/ccaruser/gpslidar.db')
-    create(conn)
+    with sqlite3.connect(dname) as conn:
+        create(conn)
 
     # Create application and api
     app = Flask(__name__)
     api = Api(app)
 
     # Add three resources to web server
-    api.add_resource(Lidar, '/lidar/<string:loc>', resource_class_kwargs={'conn': conn})
-    api.add_resource(RawGPS, '/rawgps/<string:loc>', resource_class_kwargs={'conn': conn})
-    api.add_resource(GPSPosition, '/posgps/<string:loc>', resource_class_kwargs={'conn': conn})
+    api.add_resource(Lidar, '/lidar/<string:loc>', resource_class_kwargs={'dname': dname})
+    api.add_resource(RawGPS, '/rawgps/<string:loc>', resource_class_kwargs={'dname': dname})
+    api.add_resource(GPSPosition, '/posgps/<string:loc>', resource_class_kwargs={'dname': dname})
     app.run(debug=False)  # Run web server

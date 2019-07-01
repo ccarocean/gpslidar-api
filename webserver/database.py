@@ -47,7 +47,7 @@ def insert_lidar(data, dname, loc):
     with sqlite3.connect(dname) as conn:
         c = conn.cursor()
         c.execute('''SELECT id FROM stations WHERE name=?''', (loc,))
-        sid = c.fetchone()
+        sid = c.fetchone()[0]
 
         if len(data) > 8:
             unix_time = struct.unpack('<q', data[0:8])[0]  # First thing is unix time
@@ -66,7 +66,7 @@ cno, gps_raw_id) VALUES (?,?,?,?,?,?,?,?);'''
     with sqlite3.connect(dname) as conn:
         c = conn.cursor()
         c.execute('''SELECT id FROM stations WHERE name=?''', (loc,))
-        sid = c.fetchone()
+        sid = c.fetchone()[0]
 
         counter = 0
         end = len(data)
@@ -74,7 +74,7 @@ cno, gps_raw_id) VALUES (?,?,?,?,?,?,?,?);'''
             rcv_tow, week, leap_s, num_meas = struct.unpack('<dHbB', data[counter:counter+12])
             c.execute(sql_main, (rcv_tow, week, leap_s, sid))
             c.execute('''SELECT id FROM gps_raw WHERE rcv_tow=? AND week=?''', (rcv_tow, week))
-            gpsid = c.fetchone()
+            gpsid = c.fetchone()[0]
             counter += 12
             for i in range(num_meas):
                 pr, cp, do, other = struct.unpack('ddfH', data[counter:counter+22])
@@ -92,7 +92,7 @@ def insert_pos(data, dname, loc):
     with sqlite3.connect(dname) as conn:
         c = conn.cursor()
         c.execute('''SELECT id FROM stations WHERE name=?''', (loc,))
-        sid = c.fetchone()
+        sid = c.fetchone()[0]
 
         if len(data) == 30:
             i_tow, week, lon, lat, height = struct.unpack('<IHddd', data)

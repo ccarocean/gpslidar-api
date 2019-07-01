@@ -48,7 +48,7 @@ class Lidar(Resource):
         signature = request.headers['Bearer']
         with sqlite3.connect(self._dname) as conn:
             c = conn.cursor()
-            c.execute('SELECT file_publickey FROM stations WHERE location=?', (loc,))
+            c.execute('SELECT file_publickey FROM stations WHERE name=?', (loc,))
             key = read_key(c.fetchone()[0])
 
         if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
@@ -68,7 +68,7 @@ class RawGPS(Resource):
         signature = request.headers['Bearer']
         with sqlite3.connect(self._dname) as conn:
             c = conn.cursor()
-            c.execute('SELECT file_publickey FROM stations WHERE location=?', (loc,))
+            c.execute('SELECT file_publickey FROM stations WHERE name=?', (loc,))
             key = read_key(c.fetchone()[0])
 
         if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
@@ -88,7 +88,7 @@ class GPSPosition(Resource):
         signature = request.headers['Bearer']
         with sqlite3.connect(self._dname) as conn:
             c = conn.cursor()
-            c.execute('SELECT file_publickey FROM stations WHERE location=?', (loc,))
+            c.execute('SELECT file_publickey FROM stations WHERE name=?', (loc,))
             key = read_key(c.fetchone()[0])
 
         if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":

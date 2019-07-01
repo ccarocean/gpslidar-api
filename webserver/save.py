@@ -30,7 +30,6 @@ def save_lidar(data, data_directory, loc):
 
 def save_raw_gps(data, data_directory, loc, lat, lon, alt):
     """ Function for saving raw GPS data to a file. """
-    # TODO: too slow
     counter = 0
     end = len(data)
     # Do the rinex thing

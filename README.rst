@@ -34,12 +34,12 @@ Run as root:
 
 .. code-block::
 
-    sudo gpslidar-api
+    sudo .venv/bin/python -m webserver
 
 
 Related Files
 -------------
-- Public keys for station must be located in 
+- Public keys for station must be located in
 - Data directory must exist at
 
 

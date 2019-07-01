@@ -49,7 +49,9 @@ class Lidar(Resource):
         with sqlite3.connect(self._dname) as conn:
             c = conn.cursor()
             c.execute('SELECT file_publickey FROM stations WHERE name=?', (loc,))
-            key = read_key(c.fetchone()[0])
+            l = c.fetchone()[0]
+            print(l)
+            key = read_key(l)
 
         if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
             insert_lidar(request.data, self._dname, loc)
@@ -69,7 +71,9 @@ class RawGPS(Resource):
         with sqlite3.connect(self._dname) as conn:
             c = conn.cursor()
             c.execute('SELECT file_publickey FROM stations WHERE name=?', (loc,))
-            key = read_key(c.fetchone()[0])
+            l = c.fetchone()[0]
+            print(l)
+            key = read_key(l)
 
         if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
             insert_rawgps(request.data, self._dname, loc)

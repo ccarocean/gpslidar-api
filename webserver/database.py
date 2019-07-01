@@ -10,15 +10,15 @@ altitude float NOT NULL, file_publickey text NOT NULL, UNIQUE (name, file_public
 
     c.execute('''INSERT OR IGNORE INTO stations (name, latitude, longitude, altitude,  
 file_publickey) VALUES ("harv", 34.468333, 239.328333, 
-0, "/home/ccaruser/keys/harv.key.pub");''')
+0, "/home/ccaruser/.keys/harv.key.pub");''')
 
     c.execute('''INSERT OR IGNORE INTO stations (name, latitude, longitude, altitude, 
 file_publickey) VALUES ("cata", 33.445066, 241.515673, 
-0, "/home/ccaruser/keys/cata.key.pub");''')
+0, "/home/ccaruser/.keys/cata.key.pub");''')
 
     c.execute('''INSERT OR IGNORE INTO stations (name, latitude, longitude, altitude, 
 file_publickey) VALUES ("ucbo", 40.009874, 254.755720, 
-1600, "/home/ccaruser/keys/harv.key.pub");''')
+1600, "/home/ccaruser/.keys/harv.key.pub");''')
 
     c.execute('''CREATE TABLE IF NOT EXISTS gps_raw (id INTEGER PRIMARY KEY, rcv_tow int NOT NULL,  
 week int NOT NULL, leap_seconds int NOT NULL, station_id int NOT NULL, 

@@ -3,7 +3,7 @@ from flask import Flask
 import argparse
 from .resources import Lidar, RawGPS, GPSPosition
 import sqlite3
-from .database import create, insert_lidar, insert_pos, insert_rawgps
+from .database import create
 
 
 def main():

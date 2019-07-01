@@ -3,6 +3,7 @@ from .database import insert_rawgps, insert_pos, insert_lidar
 import os
 import jwt
 import datetime as dt
+import sqlite3
 
 
 def read_key(fname):
@@ -26,10 +27,10 @@ _STATIONS = {'harv': {'public-key':   read_key('../lidar-read/harv.key.pub'),
              }
 
 
-def decode_msg(m, loc):
+def decode_msg(m, key):
     """ Function to decode message with the key. """
     try:
-        time = jwt.decode(m, _STATIONS[loc]['public-key'], algorithm='RS256')['t']
+        time = jwt.decode(m, key, algorithm='RS256')['t']
         td = ((dt.datetime.utcnow() - dt.datetime(1970, 1, 1)).total_seconds() - float(time))
     except:
         return False
@@ -45,7 +46,12 @@ class Lidar(Resource):
 
     def post(self, loc):
         signature = request.headers['Bearer']
-        if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
+        with sqlite3.connect(self._dname) as conn:
+            c = conn.cursor()
+            c.execute('SELECT file_publickey FROM stations WHERE location=?', (loc,))
+            key = read_key(c.fetchone()[0])
+
+        if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
             insert_lidar(request.data, self._dname, loc)
             print('LiDAR data from ' + loc)
             return '', 201
@@ -60,7 +66,12 @@ class RawGPS(Resource):
 
     def post(self, loc):
         signature = request.headers['Bearer']
-        if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
+        with sqlite3.connect(self._dname) as conn:
+            c = conn.cursor()
+            c.execute('SELECT file_publickey FROM stations WHERE location=?', (loc,))
+            key = read_key(c.fetchone()[0])
+
+        if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
             insert_rawgps(request.data, self._dname, loc)
             print('Raw GPS data from ' + loc)
             return '', 201
@@ -75,7 +86,12 @@ class GPSPosition(Resource):
 
     def post(self, loc):
         signature = request.headers['Bearer']
-        if decode_msg(signature, loc) and request.headers['Content-Type'] == "application/octet-stream":
+        with sqlite3.connect(self._dname) as conn:
+            c = conn.cursor()
+            c.execute('SELECT file_publickey FROM stations WHERE location=?', (loc,))
+            key = read_key(c.fetchone()[0])
+
+        if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
             insert_pos(request.data, self._dname, loc)
             print('GPS Position data from ' + loc)
             return '', 201

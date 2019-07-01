@@ -46,7 +46,7 @@ def insert_lidar(data, dname, loc):
     sql = ''' INSERT INTO lidar (unix_time, centimeters, station_id) VALUES (?,?,?);'''
     with sqlite3.connect(dname) as conn:
         c = conn.cursor()
-        c.execute('''SELECT id FROM stations WHERE name=?''', loc)
+        c.execute('''SELECT id FROM stations WHERE name=?''', (loc,))
         sid = c.fetchone()
 
         if len(data) > 8:
@@ -64,7 +64,7 @@ def insert_rawgps(data, dname, loc):
 cno, gps_raw_id) VALUES (?,?,?,?,?,?,?,?);'''
     with sqlite3.connect(dname) as conn:
         c = conn.cursor()
-        c.execute('''SELECT id FROM stations WHERE name=?''', loc)
+        c.execute('''SELECT id FROM stations WHERE name=?''', (loc,))
         sid = c.fetchone()
 
         counter = 0
@@ -90,7 +90,7 @@ def insert_pos(data, dname, loc):
     sql = '''INSERT INTO gps_position (i_tow, week, longitude, latitude, height, station_id) VALUES (?,?,?,?,?,?);'''
     with sqlite3.connect(dname) as conn:
         c = conn.cursor()
-        c.execute('''SELECT id FROM stations WHERE name=?''', loc)
+        c.execute('''SELECT id FROM stations WHERE name=?''', (loc,))
         sid = c.fetchone()
 
         if len(data) == 30:

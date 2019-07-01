@@ -48,12 +48,14 @@ def insert_lidar(data, dname, loc):
         c = conn.cursor()
         c.execute('''SELECT id FROM stations WHERE name=?''', (loc,))
         sid = c.fetchone()
+        print(sid)
 
         if len(data) > 8:
             unix_time = struct.unpack('<q', data[0:8])[0]  # First thing is unix time
             num = (len(data)-8)/6  # Number of measurements
             for i in range(int(num)):
                 t, meas = struct.unpack('<LH', data[8+i*6:8+(i+1)*6])  # Unpack data
+                print(t, meas)
                 c.execute(sql, (unix_time + t * 10**-6, meas, sid))  # Insert into database
             conn.commit()
 

@@ -54,7 +54,6 @@ def insert_lidar(data, dname, loc):
             num = (len(data)-8)/6  # Number of measurements
             for i in range(int(num)):
                 t, meas = struct.unpack('<LH', data[8+i*6:8+(i+1)*6])  # Unpack data
-                print((unix_time + t * 10**-6, meas, sid))
                 c.execute(sql, (unix_time + t * 10**-6, meas, sid))  # Insert into database
             conn.commit()
 

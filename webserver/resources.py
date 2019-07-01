@@ -71,7 +71,7 @@ class RawGPS(Resource):
 class GPSPosition(Resource):
     """ Class for handling GPS Position post api request. """
     def __init__(self, dname):
-        self._conn = dname
+        self._dname = dname
 
     def post(self, loc):
         signature = request.headers['Bearer']

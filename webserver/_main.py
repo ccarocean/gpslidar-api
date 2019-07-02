@@ -118,11 +118,13 @@ def main():
                                                                                  'connection': connection})
     '''
     db.create_all()
-    print(stations.query.filter_by(name='harv').first())
     if not stations.query.filter_by(name='harv').first():
         db.session.add(stations('harv', 34.468333, 239.328333, 0, '/home/ccaruser/.keys/harv.key.pub'))
+        db.session.commit()
     if not stations.query.filter_by(name='cata').first():
         db.session.add(stations('cata', 33.445066, 241.515673, 0, '/home/ccaruser/.keys/cata.key.pub'))
+        db.session.commit()
     if not stations.query.filter_by(name='ucbo').first():
         db.session.add(stations('ucbo', 40.009874, 254.755720, 1600, '/home/ccaruser/.keys/ucbo.key.pub'))
+        db.session.commit()
     app.run(debug=False)  # Run web server

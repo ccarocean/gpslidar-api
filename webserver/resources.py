@@ -3,7 +3,7 @@ from .database import insert_rawgps, insert_pos, insert_lidar
 import os
 import jwt
 import datetime as dt
-import sqlite3
+import sqlalchemy as db
 
 
 def read_key(fname):
@@ -36,10 +36,14 @@ class Lidar(Resource):
 
     def post(self, loc):
         signature = request.headers['Bearer']
-        with sqlite3.connect(self._dname) as conn:
-            c = conn.cursor()
-            c.execute('SELECT file_publickey FROM stations WHERE name=?', (loc,))
-            key = read_key(c.fetchone()[0])
+
+        engine = db.create_engine(self._dname)
+        metadata = db.MetaData()
+        connection = engine.connect()
+        stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
+        query = db.select([stations.columns.file_publickey]).where(stations.columns.name == loc)
+        ResultProxy = connection.execute(query)
+        key = read_key(ResultProxy.fetchall()[0][0])
 
         if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
             insert_lidar(request.data, self._dname, loc)
@@ -56,10 +60,14 @@ class RawGPS(Resource):
 
     def post(self, loc):
         signature = request.headers['Bearer']
-        with sqlite3.connect(self._dname) as conn:
-            c = conn.cursor()
-            c.execute('SELECT file_publickey FROM stations WHERE name=?', (loc,))
-            key = read_key(c.fetchone()[0])
+
+        engine = db.create_engine(self._dname)
+        metadata = db.MetaData()
+        connection = engine.connect()
+        stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
+        query = db.select([stations.columns.file_publickey]).where(stations.columns.name == loc)
+        ResultProxy = connection.execute(query)
+        key = read_key(ResultProxy.fetchall()[0][0])
 
         if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
             insert_rawgps(request.data, self._dname, loc)
@@ -76,10 +84,14 @@ class GPSPosition(Resource):
 
     def post(self, loc):
         signature = request.headers['Bearer']
-        with sqlite3.connect(self._dname) as conn:
-            c = conn.cursor()
-            c.execute('SELECT file_publickey FROM stations WHERE name=?', (loc,))
-            key = read_key(c.fetchone()[0])
+
+        engine = db.create_engine(self._dname)
+        metadata = db.MetaData()
+        connection = engine.connect()
+        stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
+        query = db.select([stations.columns.file_publickey]).where(stations.columns.name == loc)
+        ResultProxy = connection.execute(query)
+        key = read_key(ResultProxy.fetchall()[0][0])
 
         if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
             insert_pos(request.data, self._dname, loc)

@@ -1,99 +1,150 @@
 import struct
-import sqlite3
+import sqlalchemy as db
 
 
-def create(conn):
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS stations (id INTEGER PRIMARY KEY, 
-name varchar[4] NOT NULL, latitude float NOT NULL, longitude float NOT NULL, 
-altitude float NOT NULL, file_publickey text NOT NULL, UNIQUE (name, file_publickey));''')
+def create(dname):
+    engine = db.create_engine(dname)
+    metadata = db.MetaData()
+    connection = engine.connect()
+    if not engine.dialect.has_table('stations'):
+        stations = db.Table('stations', metadata,
+                            db.Column('id',             db.Integer(),   primary_key=True),
+                            db.Column('name',           db.String(4),   nullable=False),
+                            db.Column('latitude',       db.Float(),     nullable=False),
+                            db.Column('longitude',      db.Float(),     nullable=False),
+                            db.Column('altitude',       db.Float(),     nullable=False),
+                            db.Column('file_publickey', db.String(255), nullable=False)
+                            )
+        metadata.create_all(engine)
+        query = db.insert(stations).values(name='harv', latitude=34.468333, longitude=239.328333, altitude=0,
+                                           file_publickey='/home/ccaruser/.keys/harv.key.pub')
+        ResultProxy = connection.execute(query)
+        query = db.insert(stations).values(name='cata', latitude=33.445066, longitude=241.515673, altitude=0,
+                                           file_publickey='/home/ccaruser/.keys/cata.key.pub')
+        ResultProxy = connection.execute(query)
+        query = db.insert(stations).values(name='ucbo', latitude=40.009874, longitude=254.755720, altitude=1600,
+                                           file_publickey='/home/ccaruser/.keys/ucbo.key.pub')
+        ResultProxy = connection.execute(query)
 
-    c.execute('''INSERT OR IGNORE INTO stations (name, latitude, longitude, altitude,  
-file_publickey) VALUES ("harv", 34.468333, 239.328333, 
-0, "/home/ccaruser/.keys/harv.key.pub");''')
+    if not engine.dialect.has_table('gps_raw'):
+        gps_raw = db.Table('gps_raw', metadata,
+                           db.Column('id',           db.Integer(), primary_key=True),
+                           db.Column('rcv_tow',      db.Integer(), nullable=False),
+                           db.Column('week',         db.Integer(), nullable=False),
+                           db.Column('leap_seconds', db.Integer(), nullable=False),
+                           db.Column('station_id',   db.Integer(), db.ForeignKey('stations.id'), nullable=False)
+                           )
+        metadata.create_all(engine)
 
-    c.execute('''INSERT OR IGNORE INTO stations (name, latitude, longitude, altitude, 
-file_publickey) VALUES ("cata", 33.445066, 241.515673, 
-0, "/home/ccaruser/.keys/cata.key.pub");''')
+    if not engine.dialect.has_table('gps_measurement'):
+        gps_measurement = db.Table('gps_measurement', metadata,
+                                   db.Column('id',            db.Integer(), primary_key=True),
+                                   db.Column('pseudorange',   db.Float(),   nullable=False),
+                                   db.Column('carrier_phase', db.Float(),   nullable=False),
+                                   db.Column('doppler_shift', db.Float(),   nullable=False),
+                                   db.Column('gnss_id',       db.Integer(), nullable=False),
+                                   db.Column('sv_id',         db.Integer(), nullable=False),
+                                   db.Column('signal_id',     db.Integer(), nullable=False),
+                                   db.Column('cno',           db.Integer(), nullable=False),
+                                   db.Column('gps_raw_id',    db.Integer(), db.ForeignKey('gps_raw.id'), nullable=False)
+                                   )
+        metadata.create_all(engine)
 
-    c.execute('''INSERT OR IGNORE INTO stations (name, latitude, longitude, altitude, 
-file_publickey) VALUES ("ucbo", 40.009874, 254.755720, 
-1600, "/home/ccaruser/.keys/harv.key.pub");''')
+    if not engine.dialect.has_table('gps_position'):
+        gps_position = db.Table('gps_position', metadata,
+                                db.Column('id',         db.Integer(), primary_key=True),
+                                db.Column('i_tow',      db.Integer(), nullable=False),
+                                db.Column('week',       db.Integer(), nullable=False),
+                                db.Column('longitude',  db.Float(),   nullable=False),
+                                db.Column('latitude',   db.Float(),   nullable=False),
+                                db.Column('height',     db.Float(),   nullable=False),
+                                db.Column('station_id', db.Integer(), db.ForeignKey('stations.id'), nullable=False)
+                                )
+        metadata.create_all(engine)
 
-    c.execute('''CREATE TABLE IF NOT EXISTS gps_raw (id INTEGER PRIMARY KEY, rcv_tow int NOT NULL,  
-week int NOT NULL, leap_seconds int NOT NULL, station_id int NOT NULL, 
-FOREIGN KEY (station_id) REFERENCES stations(id), UNIQUE (rcv_tow));''')
-
-    c.execute('''CREATE TABLE IF NOT EXISTS gps_measurement (id INTEGER PRIMARY KEY, 
-pseudorange double NOT NULL, carrier_phase double NOT NULL, 
-doppler_shift float NOT NULL, gnss_id int NOT NULL, sv_id int NOT NULL, 
-signal_id int NOT NULL, cno int NOT NULL, gps_raw_id int NOT NULL, 
-FOREIGN KEY (gps_raw_id) REFERENCES gps_raw(id));''')
-
-    c.execute('''CREATE TABLE IF NOT EXISTS gps_position (id INTEGER PRIMARY KEY, 
-i_tow int NOT NULL, week int NOT NULL, longitude float NOT NULL, 
-latitude float NOT NULL, height float NOT NULL, station_id int NOT NULL, 
-FOREIGN KEY (station_id) REFERENCES stations(id), UNIQUE (i_tow));''')
-
-    c.execute('''CREATE TABLE IF NOT EXISTS lidar (id INTEGER PRIMARY KEY, unix_time double NOT NULL,  
-centimeters int NOT NULL, station_id int NOT NULL, FOREIGN KEY (station_id) REFERENCES stations(id), 
-UNIQUE (unix_time));''')
-
-    conn.commit()
+    if not engine.dialect.has_table('lidar'):
+        lidar = db.Table('lidar', metadata,
+                         db.Column('id',          db.Integer(), primary_key=True),
+                         db.Column('unix_time',   db.Float(),   nullable=False),
+                         db.Column('centimeters', db.Integer(), nullable=False),
+                         db.Column('station_id',  db.Integer(), db.ForeignKey('stations.id'), nullable=False)
+                         )
+        metadata.create_all(engine)
 
 
 def insert_lidar(data, dname, loc):
-    sql = ''' INSERT INTO lidar (unix_time, centimeters, station_id) VALUES (?,?,?);'''
-    with sqlite3.connect(dname) as conn:
-        c = conn.cursor()
-        c.execute('''SELECT id FROM stations WHERE name=?''', (loc,))
-        sid = c.fetchone()[0]
+    engine = db.create_engine(dname)
+    metadata = db.MetaData()
+    connection = engine.connect()
+    stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
+    lidar = db.Table('lidar', metadata, autoload=True, autoload_with=engine)
 
-        if len(data) > 8:
-            unix_time = struct.unpack('<q', data[0:8])[0]  # First thing is unix time
-            num = (len(data)-8)/6  # Number of measurements
-            for i in range(int(num)):
-                t, meas = struct.unpack('<LH', data[8+i*6:8+(i+1)*6])  # Unpack data
-                c.execute(sql, (unix_time + t * 10**-6, meas, sid))  # Insert into database
-            conn.commit()
+    query = db.select([stations.columns.id]).where(stations.columns.name == loc)
+    ResultProxy = connection.execute(query)
+    sid = ResultProxy.fetchall()[0][0]
+
+    if len(data) > 8:
+        unix_time = struct.unpack('<q', data[0:8])[0]  # First thing is unix time
+        num = (len(data)-8)/6  # Number of measurements
+        for i in range(int(num)):
+            t, meas = struct.unpack('<LH', data[8+i*6:8+(i+1)*6])  # Unpack data
+            query = db.insert(lidar).values(unix_time=unix_time + t*10**-6, centimeters=meas, station_id=sid)
+            ResultProxy = connection.execute(query)
 
 
 def insert_rawgps(data, dname, loc):
-    sql_main = ''' INSERT INTO gps_raw (rcv_tow, week, leap_seconds, station_id) VALUES (?,?,?,?);'''
-    sql_meas = ''' INSERT INTO gps_measurement (pseudorange, carrier_phase, doppler_shift, gnss_id, sv_id, signal_id, 
-cno, gps_raw_id) VALUES (?,?,?,?,?,?,?,?);'''
-    with sqlite3.connect(dname) as conn:
-        c = conn.cursor()
-        c.execute('''SELECT id FROM stations WHERE name=?''', (loc,))
-        sid = c.fetchone()[0]
+    engine = db.create_engine(dname)
+    metadata = db.MetaData()
+    connection = engine.connect()
+    stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
+    gps_raw = db.Table('gps_raw', metadata, autoload=True, autoload_with=engine)
+    gps_measurement = db.Table('gps_measurement', metadata, autoload=True, autoload_with=engine)
 
-        counter = 0
-        end = len(data)
-        while counter < end:
-            rcv_tow, week, leap_s, num_meas = struct.unpack('<dHbB', data[counter:counter+12])
-            c.execute(sql_main, (rcv_tow, week, leap_s, sid))
-            c.execute('''SELECT id FROM gps_raw WHERE rcv_tow=? AND week=?''', (rcv_tow, week))
-            gpsid = c.fetchone()[0]
-            counter += 12
-            for i in range(num_meas):
-                pr, cp, do, other = struct.unpack('ddfH', data[counter:counter+22])
-                gnss_id = (other >> 12) & 0x07
-                sv_id = (other >> 6) & 0x3f
-                sig_id = (other >> 3) & 0x07
-                cno = other & 0x07
-                c.execute(sql_meas, (pr, cp, do, gnss_id, sv_id, sig_id, cno, gpsid))
-                counter += 22
-        conn.commit()
+    query = db.select([stations.columns.id]).where(stations.columns.name == loc)
+    ResultProxy = connection.execute(query)
+    sid = ResultProxy.fetchall()[0][0]
+
+    counter = 0
+    end = len(data)
+    while counter < end:
+        rcv_tow, week, leap_s, num_meas = struct.unpack('<dHbB', data[counter:counter+12])
+
+        query = db.insert(gps_raw).values(rcv_tow=rcv_tow, week=week, leap_seconds=leap_s, station_id=sid)
+        ResultProxy = connection.execute(query)
+
+        query = db.select([gps_raw.columns.id]).where(
+            gps_raw.columns.rcv_tow == rcv_tow and gps_raw.columns.week == week)
+        ResultProxy = connection.execute(query)
+        gpsid = ResultProxy.fetchall()[-1][0]
+
+        counter += 12
+        for i in range(num_meas):
+            pr, cp, do, other = struct.unpack('ddfH', data[counter:counter+22])
+            gnss_id = (other >> 12) & 0x07
+            sv_id = (other >> 6) & 0x3f
+            sig_id = (other >> 3) & 0x07
+            cno = other & 0x07
+
+            query = db.insert(gps_measurement).values(pseudorange=pr, carrier_phase=cp, doppler_shift=do,
+                                                      gnss_id=gnss_id, sv_id=sv_id, signal_id=sig_id, cno=cno,
+                                                      gps_raw_id=gpsid)
+            ResultProxy = connection.execute(query)
+            counter += 22
 
 
 def insert_pos(data, dname, loc):
-    sql = '''INSERT INTO gps_position (i_tow, week, longitude, latitude, height, station_id) VALUES (?,?,?,?,?,?);'''
-    with sqlite3.connect(dname) as conn:
-        c = conn.cursor()
-        c.execute('''SELECT id FROM stations WHERE name=?''', (loc,))
-        sid = c.fetchone()[0]
+    engine = db.create_engine(dname)
+    metadata = db.MetaData()
+    connection = engine.connect()
+    stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
+    gps_position = db.Table('gps_position', metadata, autoload=True, autoload_with=engine)
 
-        if len(data) == 30:
-            i_tow, week, lon, lat, height = struct.unpack('<IHddd', data)
-            c.execute(sql, (i_tow, week, lon, lat, height, sid))
-        conn.commit()
+    query = db.select([stations.columns.id]).where(stations.columns.name == loc)
+    ResultProxy = connection.execute(query)
+    sid = ResultProxy.fetchall()[0][0]
+
+    if len(data) == 30:
+        i_tow, week, lon, lat, height = struct.unpack('<IHddd', data)
+        query = db.insert(gps_position).values(i_tow=i_tow, week=week, longitude=lon, latitude=lat, height=height,
+                                               station_id=sid)
+        ResultProxy = connection.execute(query)

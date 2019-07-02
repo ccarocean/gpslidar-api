@@ -2,23 +2,15 @@ from flask_restful import Api
 from flask import Flask
 import argparse
 from .resources import Lidar, RawGPS, GPSPosition
-import sqlite3
+import sqlalchemy as db
 from .database import create
 
 
 def main():
-    # Parse arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--directory', type=str, default='/home/ccaruser/data',
-                        help='Directory for output data. Must have subdirectory for location, containing subdirectories'
-                             ' for data types.')
-    args = parser.parse_args()
-
-    dname = '/home/ccaruser/gpslidar.db'
+    dname = 'sqlite:////home/ccaruser/gpslidar3.db'
 
     # Create database
-    with sqlite3.connect(dname) as conn:
-        create(conn)
+    create(dname)
 
     # Create application and api
     app = Flask(__name__)

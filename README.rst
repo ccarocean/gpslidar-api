@@ -30,11 +30,11 @@ Source Virtual Environment:
 
     source .venv/bin/activate
 
-Run as root:
+Run:
 
 .. code-block::
 
-    sudo .venv/bin/python -m webserver
+    python -m webserver
 
 
 Related Files

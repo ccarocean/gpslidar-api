@@ -6,7 +6,7 @@ import jwt
 import datetime as dt
 
 
-dname = 'sqlite:////home/ccaruser/gpslidar4.db'  # ?check_same_thread=False'
+dname = 'sqlite:////home/ccaruser/gpslidar4.db'
 
 # Create application and api
 app = Flask(__name__)
@@ -201,31 +201,6 @@ def save_position(loc):
 
 
 def main():
-
-    '''
-    # Create database
-    engine = db.create_engine(dname)
-    metadata = db.MetaData()
-    connection = engine.connect()
-    create(engine, metadata, connection)
-    stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
-    lidar = db.Table('lidar', metadata, autoload=True, autoload_with=engine)
-    gps_raw = db.Table('gps_raw', metadata, autoload=True, autoload_with=engine)
-    gps_measurement = db.Table('gps_measurement', metadata, autoload=True, autoload_with=engine)
-    gps_position = db.Table('gps_position', metadata, autoload=True, autoload_with=engine)
-
-
-
-    # Add three resources to web server
-    api.add_resource(Lidar, '/lidar/<string:loc>', resource_class_kwargs={'stations': stations, 'lidar': lidar,
-                                                                          'connection': connection})
-    api.add_resource(RawGPS, '/rawgps/<string:loc>', resource_class_kwargs={'stations': stations, 'gps_raw': gps_raw,
-                                                                            'gps_measurement': gps_measurement,
-                                                                            'connection': connection})
-    api.add_resource(GPSPosition, '/posgps/<string:loc>', resource_class_kwargs={'stations': stations,
-                                                                                 'gps_position': gps_position,
-                                                                                 'connection': connection})
-    '''
     db.create_all()
     if not stations.query.filter_by(name='harv').first():
         db.session.add(stations('harv', 34.468333, 239.328333, 0, '/home/ccaruser/.keys/harv.key.pub'))

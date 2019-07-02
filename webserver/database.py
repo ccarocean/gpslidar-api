@@ -95,6 +95,7 @@ def insert_lidar(data, dname, loc):
             t, meas = struct.unpack('<LH', data[8+i*6:8+(i+1)*6])  # Unpack data
             query = db.insert(lidar).values(unix_time=unix_time + t*10**-6, centimeters=meas, station_id=sid)
             ResultProxy = connection.execute(query)
+            print('added')
 
 
 def insert_rawgps(data, dname, loc):

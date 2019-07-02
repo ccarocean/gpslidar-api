@@ -1,6 +1,0 @@
-#!/home/addodge/gpslidar-api/.venv/bin/python
-
-from webserver.__main__ import main
-
-if __name__ == '__main__':
-    main()

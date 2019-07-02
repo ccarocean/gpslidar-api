@@ -8,7 +8,7 @@ Options
 
 Installation
 ------------
-Create virtual environment:
+Create and source virtual environment:
 
 .. code-block::
 
@@ -34,13 +34,16 @@ Run:
 
 .. code-block::
 
-    python -m webserver
+    gpslidar-api
 
 
 Related Files
 -------------
-- Public keys for station must be located in
-- Data directory must exist at
+- Public keys for station must be located in ./keys/
+- LiDAR data directory must exist at /srv/data/gpslidar/lidar
+- Raw GPS data directory must exist at /srv/data/gpslidar/rawgps
+- GPS position data directory must exist at /srv/data/gpslidar/position
+- Stations must be kept in json file in same directory as program (./stations.json)
 
 
 Author
@@ -55,3 +58,6 @@ Jet Propulsion Laboratory
 
 Purpose
 -------
+This program is for setting up a web server to receive gps and lidar data from multiple systems created on raspberry
+pi's. This program is meant to run on the CCAR cods server. It saves the incoming data to a database to later be saved
+to a file.

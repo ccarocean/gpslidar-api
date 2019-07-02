@@ -90,11 +90,6 @@ def save_lidar(loc):
             return '', 201
     return '', 404
 
-db.session.bulk_insert_mappings(self.dbmodel_class, [#GoogleDrive_callputjpg, [
-                    dic_files
-                    for dic_files in list_folderfiles
-        ])
-
 
 def main():
 

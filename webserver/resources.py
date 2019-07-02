@@ -15,7 +15,16 @@ def read_key(fname):
         print('Incorrect key file location. ')
         os._exit(1)
     return key
-
+'''
+engine = db.create_engine(dname)
+metadata = db.MetaData()
+connection = engine.connect()
+stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
+query = db.select([stations.columns.file_publickey]).where(stations.columns.name == loc)
+ResultProxy = connection.execute(query)
+key = read_key(ResultProxy.fetchall()[0][0])
+KEYS = {'harv': }
+'''
 
 def decode_msg(m, key):
     """ Function to decode message with the key. """
@@ -31,22 +40,24 @@ def decode_msg(m, key):
 
 class Lidar(Resource):
     """ Class for handling LiDAR post api request. """
-    def __init__(self, dname):
-        self._dname = dname
+    def __init__(self, stations, connection, lidar):
+        self._stations = stations
+        self._connection = connection
+        self._lidar = lidar
 
     def post(self, loc):
         signature = request.headers['Bearer']
 
-        engine = db.create_engine(self._dname)
-        metadata = db.MetaData()
-        connection = engine.connect()
-        stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
-        query = db.select([stations.columns.file_publickey]).where(stations.columns.name == loc)
-        ResultProxy = connection.execute(query)
+        #engine = db.create_engine(self._dname)
+        #metadata = db.MetaData()
+        #connection = engine.connect()
+        #stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
+        query = db.select([self._stations.columns.file_publickey]).where(self._stations.columns.name == loc)
+        ResultProxy = self._connection.execute(query)
         key = read_key(ResultProxy.fetchall()[0][0])
 
         if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
-            insert_lidar(request.data, self._dname, loc)
+            insert_lidar(request.data, self._stations, self._lidar, self._connection, loc)
             print('LiDAR data from ' + loc)
             return '', 201
         else:

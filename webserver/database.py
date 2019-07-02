@@ -77,12 +77,12 @@ def create(dname):
         print('LiDAR Table Created')
 
 
-def insert_lidar(data, dname, loc):
-    engine = db.create_engine(dname)
-    metadata = db.MetaData()
-    connection = engine.connect()
-    stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
-    lidar = db.Table('lidar', metadata, autoload=True, autoload_with=engine)
+def insert_lidar(data, stations, lidar, connection, loc):
+    #engine = db.create_engine(dname)
+    #metadata = db.MetaData()
+    #connection = engine.connect()
+    #stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
+    #lidar = db.Table('lidar', metadata, autoload=True, autoload_with=engine)
 
     query = db.select([stations.columns.id]).where(stations.columns.name == loc)
     ResultProxy = connection.execute(query)

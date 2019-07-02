@@ -118,6 +118,7 @@ def main():
                                                                                  'connection': connection})
     '''
     db.create_all()
+    print(stations.query.filter_by(name='harv').first())
     if not stations.query.filter_by(name='harv').first():
         db.session.add(stations('harv', 34.468333, 239.328333, 0, '/home/ccaruser/.keys/harv.key.pub'))
     if not stations.query.filter_by(name='cata').first():

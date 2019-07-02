@@ -11,7 +11,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = dname
 db = SQLAlchemy(app)
 
 
-class Stations(db.Model):
+class stations(db.Model):
+    __tablename__ = 'stations'
     id = db.Column('id', db.Integer(), primary_key=True)
     name = db.Column('name', db.String(4), nullable=False)
     latitude = db.Column('latitude', db.Float(), nullable=False)
@@ -27,11 +28,12 @@ class Stations(db.Model):
         self.file_publickey = f
 
 
-class Lidar(db.Model):
+class lidar(db.Model):
+    __tablename__ = 'lidar'
     id = db.Column('id', db.Integer, primary_key=True)
     unix_time = db.Column('unix_time', db.Float(), nullable=False)
     centimeters = db.Column('centimeters', db.Integer(), nullable=False)
-    station_id = db.Column('station_id', db.Integer, db.ForeignKey('Stations.id'), nullable=False)
+    station_id = db.Column('station_id', db.Integer, db.ForeignKey('stations.id'), nullable=False)
 
     def __init__(self, t, cm, sid):
         self.unix_time = t

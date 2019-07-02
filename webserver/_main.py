@@ -52,6 +52,7 @@ def save_lidar(loc):
             t, meas = struct.unpack('<LH', request.data[8+i*6:8+(i+1)*6])  # Unpack data
             db.session.add(lidar(unix_time + t*10**-6, meas, sid))
         db.session.commit()
+        return 'OK'
 
 
 def main():

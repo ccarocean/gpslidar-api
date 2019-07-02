@@ -47,10 +47,10 @@ def save_lidar(loc):
     if request.method == 'POST' and len(request.data) > 8:
         unix_time = struct.unpack('<q', request.data[0:8])[0]  # First thing is unix time
         num = (len(request.data)-8)/6  # Number of measurements
-        sid = Stations.query.filter_by(name=loc).first().id
+        sid = stations.query.filter_by(name=loc).first().id
         for i in range(int(num)):
             t, meas = struct.unpack('<LH', request.data[8+i*6:8+(i+1)*6])  # Unpack data
-            db.session.add(Lidar(unix_time + t*10**-6, meas, sid))
+            db.session.add(lidar(unix_time + t*10**-6, meas, sid))
         db.session.commit()
 
 

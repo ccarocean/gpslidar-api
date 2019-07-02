@@ -2,7 +2,6 @@ from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 import struct
 import os
-import sys
 import jwt
 import datetime as dt
 import json

@@ -24,7 +24,7 @@ class Lidar(db.Model):
 
 
 @app.route('/lidar/<string:loc>', methods=['POST'])
-def save_lidar():
+def save_lidar(loc):
     """ Class for handling LiDAR post api request. """
     if request.method == 'POST' and len(request.data) > 8:
         unix_time = struct.unpack('<q', request.data[0:8])[0]  # First thing is unix time

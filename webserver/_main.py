@@ -44,6 +44,7 @@ class lidar(db.Model):
 @app.route('/lidar/<string:loc>', methods=['POST'])
 def save_lidar(loc):
     """ Class for handling LiDAR post api request. """
+
     if request.method == 'POST' and len(request.data) > 8:
         unix_time = struct.unpack('<q', request.data[0:8])[0]  # First thing is unix time
         num = (len(request.data)-8)/6  # Number of measurements
@@ -52,7 +53,7 @@ def save_lidar(loc):
             t, meas = struct.unpack('<LH', request.data[8+i*6:8+(i+1)*6])  # Unpack data
             db.session.add(lidar(unix_time + t*10**-6, meas, sid))
         db.session.commit()
-        return 201
+        return '', 201
 
 def main():
 

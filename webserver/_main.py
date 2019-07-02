@@ -78,13 +78,23 @@ def save_lidar(loc):
             unix_time = struct.unpack('<q', request.data[0:8])[0]  # First thing is unix time
             num = (len(request.data) - 8) / 6  # Number of measurements
             sid = stations.query.filter_by(name=loc).first().id
+            list_vals = []
             for i in range(int(num)):
                 t, meas = struct.unpack('<LH', request.data[8 + i * 6:8 + (i + 1) * 6])  # Unpack data
-                db.session.add(lidar(unix_time + t * 10 ** -6, meas, sid))
+                list_vals.append({'unix_time': unix_time + t * 10**-6, 'centimeters': meas, 'station_id': sid})
+                #db.session.add(lidar(unix_time + t * 10 ** -6, meas, sid))
+                #db.session.flush()
+            db.session.bulk_insert_mappings(lidar, list_vals)
             db.session.commit()
             print('LiDAR data from ' + loc)
             return '', 201
-    return '', 404  
+    return '', 404
+
+db.session.bulk_insert_mappings(self.dbmodel_class, [#GoogleDrive_callputjpg, [
+                    dic_files
+                    for dic_files in list_folderfiles
+        ])
+
 
 def main():
 

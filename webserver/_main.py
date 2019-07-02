@@ -10,7 +10,7 @@ def main():
     dname = 'sqlite:////home/ccaruser/gpslidar3.db'
 
     # Create database
-    engine = db.create_engine(self._dname)
+    engine = db.create_engine(dname)
     metadata = db.MetaData()
     connection = engine.connect()
     create(dname)

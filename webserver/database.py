@@ -6,7 +6,7 @@ def create(dname):
     engine = db.create_engine(dname)
     metadata = db.MetaData()
     connection = engine.connect()
-    if not engine.dialect.has_table('stations'):
+    if not engine.dialect.has_table(engine, 'stations'):
         stations = db.Table('stations', metadata,
                             db.Column('id',             db.Integer(),   primary_key=True),
                             db.Column('name',           db.String(4),   nullable=False),
@@ -25,8 +25,9 @@ def create(dname):
         query = db.insert(stations).values(name='ucbo', latitude=40.009874, longitude=254.755720, altitude=1600,
                                            file_publickey='/home/ccaruser/.keys/ucbo.key.pub')
         ResultProxy = connection.execute(query)
+        print('Station Table Created')
 
-    if not engine.dialect.has_table('gps_raw'):
+    if not engine.dialect.has_table(engine, 'gps_raw'):
         gps_raw = db.Table('gps_raw', metadata,
                            db.Column('id',           db.Integer(), primary_key=True),
                            db.Column('rcv_tow',      db.Integer(), nullable=False),
@@ -35,8 +36,9 @@ def create(dname):
                            db.Column('station_id',   db.Integer(), db.ForeignKey('stations.id'), nullable=False)
                            )
         metadata.create_all(engine)
+        print('Raw GPS Table Created')
 
-    if not engine.dialect.has_table('gps_measurement'):
+    if not engine.dialect.has_table(engine, 'gps_measurement'):
         gps_measurement = db.Table('gps_measurement', metadata,
                                    db.Column('id',            db.Integer(), primary_key=True),
                                    db.Column('pseudorange',   db.Float(),   nullable=False),
@@ -49,8 +51,9 @@ def create(dname):
                                    db.Column('gps_raw_id',    db.Integer(), db.ForeignKey('gps_raw.id'), nullable=False)
                                    )
         metadata.create_all(engine)
+        print('Raw GPS Measurement Table Created')
 
-    if not engine.dialect.has_table('gps_position'):
+    if not engine.dialect.has_table(engine, 'gps_position'):
         gps_position = db.Table('gps_position', metadata,
                                 db.Column('id',         db.Integer(), primary_key=True),
                                 db.Column('i_tow',      db.Integer(), nullable=False),
@@ -61,8 +64,9 @@ def create(dname):
                                 db.Column('station_id', db.Integer(), db.ForeignKey('stations.id'), nullable=False)
                                 )
         metadata.create_all(engine)
+        print('GPS Position Table Created')
 
-    if not engine.dialect.has_table('lidar'):
+    if not engine.dialect.has_table(engine, 'lidar'):
         lidar = db.Table('lidar', metadata,
                          db.Column('id',          db.Integer(), primary_key=True),
                          db.Column('unix_time',   db.Float(),   nullable=False),
@@ -70,6 +74,7 @@ def create(dname):
                          db.Column('station_id',  db.Integer(), db.ForeignKey('stations.id'), nullable=False)
                          )
         metadata.create_all(engine)
+        print('LiDAR Table Created')
 
 
 def insert_lidar(data, dname, loc):

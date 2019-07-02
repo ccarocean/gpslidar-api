@@ -163,7 +163,7 @@ def save_rawgps(loc):
                 rcv_tow, week, leap_s, num_meas = struct.unpack('<dHbB', request.data[counter:counter+12])
 
                 db.session.add(gps_raw(rcv_tow, week, leap_s, sid))
-                db.session.commit()
+                db.session.flush()
 
                 gpsid = gps_raw.query.filter_by(rcv_tow=rcv_tow, week=week).all()[-1].id
 

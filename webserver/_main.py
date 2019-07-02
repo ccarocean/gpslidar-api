@@ -6,7 +6,7 @@ import jwt
 import datetime as dt
 
 
-dname = 'sqlite:////home/ccaruser/gpslidar3.db'  # ?check_same_thread=False'
+dname = 'sqlite:////home/ccaruser/gpslidar4.db'  # ?check_same_thread=False'
 
 # Create application and api
 app = Flask(__name__)

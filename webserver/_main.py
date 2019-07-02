@@ -28,9 +28,9 @@ class Stations(db.Model):
 
 
 class Lidar(db.Model):
-    id = db.Column('id', db.Integer, primary_key = True)
-    unix_time = db.Column('unix_time', db.Float(), nullible=False)
-    centimeters = db.Column('centimeters', db.Integer(), nullible=False)
+    id = db.Column('id', db.Integer, primary_key=True)
+    unix_time = db.Column('unix_time', db.Float(), nullable=False)
+    centimeters = db.Column('centimeters', db.Integer(), nullable=False)
     station_id = db.Column('station_id', db.Integer, db.ForeignKey('Stations.id'), nullable=False)
 
     def __init__(self, t, cm, sid):

@@ -1,6 +1,9 @@
 from flask import Flask, request, flash, url_for, redirect, render_template
 from flask_sqlalchemy import SQLAlchemy
 import struct
+import os
+import jwt
+import datetime as dt
 
 
 dname = 'sqlite:////home/ccaruser/gpslidar3.db'  # ?check_same_thread=False'
@@ -9,6 +12,29 @@ dname = 'sqlite:////home/ccaruser/gpslidar3.db'  # ?check_same_thread=False'
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = dname
 db = SQLAlchemy(app)
+
+
+def read_key(fname):
+    """ Function to read key from file. """
+    try:
+        with open(fname, 'r') as f:
+            key = f.read()
+    except FileNotFoundError:
+        print('Incorrect key file location. ')
+        os._exit(1)
+    return key
+
+
+def decode_msg(m, key):
+    """ Function to decode message with the key. """
+    try:
+        time = jwt.decode(m, key, algorithm='RS256')['t']
+        td = ((dt.datetime.utcnow() - dt.datetime(1970, 1, 1)).total_seconds() - float(time))
+    except:
+        return False
+    if td < 10:
+        return True
+    return False
 
 
 class stations(db.Model):
@@ -44,16 +70,21 @@ class lidar(db.Model):
 @app.route('/lidar/<string:loc>', methods=['POST'])
 def save_lidar(loc):
     """ Class for handling LiDAR post api request. """
-
     if request.method == 'POST' and len(request.data) > 8:
-        unix_time = struct.unpack('<q', request.data[0:8])[0]  # First thing is unix time
-        num = (len(request.data)-8)/6  # Number of measurements
-        sid = stations.query.filter_by(name=loc).first().id
-        for i in range(int(num)):
-            t, meas = struct.unpack('<LH', request.data[8+i*6:8+(i+1)*6])  # Unpack data
-            db.session.add(lidar(unix_time + t*10**-6, meas, sid))
-        db.session.commit()
-        return '', 201
+        key = read_key(stations.query.filter_by(name=loc).first().file_publickey)
+        signature = request.headers['Bearer']
+
+        if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
+            unix_time = struct.unpack('<q', request.data[0:8])[0]  # First thing is unix time
+            num = (len(request.data) - 8) / 6  # Number of measurements
+            sid = stations.query.filter_by(name=loc).first().id
+            for i in range(int(num)):
+                t, meas = struct.unpack('<LH', request.data[8 + i * 6:8 + (i + 1) * 6])  # Unpack data
+                db.session.add(lidar(unix_time + t * 10 ** -6, meas, sid))
+            db.session.commit()
+            print('LiDAR data from ' + loc)
+            return '', 201
+    return '', 404  
 
 def main():
 

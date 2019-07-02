@@ -7,7 +7,7 @@ from .database import create
 
 
 def main():
-    dname = 'sqlite:////home/ccaruser/gpslidar3.db'
+    dname = 'sqlite:////home/ccaruser/gpslidar3.db?check_same_thread=False'
 
     # Create database
     engine = db.create_engine(dname)

@@ -29,9 +29,7 @@ setup(
     install_requires=[
         'pyjwt[crypto]',
         'flask',
-        'flask-restful',
-        'dataclasses;python_version=="3.6"',
-        'numpy',
+        'flask_sqlalchemy',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

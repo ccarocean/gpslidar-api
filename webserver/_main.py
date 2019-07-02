@@ -11,6 +11,7 @@ dname = 'sqlite:////home/ccaruser/gpslidar4.db'  # ?check_same_thread=False'
 # Create application and api
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = dname
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
@@ -142,7 +143,6 @@ def save_lidar(loc):
 
             db.session.bulk_insert_mappings(lidar, list_vals)
             db.session.commit()
-            print('LiDAR data from ' + loc)
             return '', 201
     return '', 404
 
@@ -179,7 +179,6 @@ def save_rawgps(loc):
                     counter += 22
             db.session.bulk_insert_mappings(gps_measurement, meas_list)
             db.session.commit()
-            print('Raw GPS data from ' + loc)
             return '', 201
 
     return '', 404
@@ -196,7 +195,6 @@ def save_position(loc):
             i_tow, week, lon, lat, height = struct.unpack('<IHddd', request.data)
             db.session.add(gps_position(i_tow, week, lon, lat, height, sid))
             db.session.commit()
-            print('GPS position data from ' + loc)
             return '', 201
 
     return '', 404

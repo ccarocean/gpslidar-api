@@ -15,16 +15,7 @@ def read_key(fname):
         print('Incorrect key file location. ')
         os._exit(1)
     return key
-'''
-engine = db.create_engine(dname)
-metadata = db.MetaData()
-connection = engine.connect()
-stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
-query = db.select([stations.columns.file_publickey]).where(stations.columns.name == loc)
-ResultProxy = connection.execute(query)
-key = read_key(ResultProxy.fetchall()[0][0])
-KEYS = {'harv': }
-'''
+
 
 def decode_msg(m, key):
     """ Function to decode message with the key. """

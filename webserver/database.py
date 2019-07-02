@@ -2,10 +2,7 @@ import struct
 import sqlalchemy as db
 
 
-def create(dname):
-    engine = db.create_engine(dname)
-    metadata = db.MetaData()
-    connection = engine.connect()
+def create(engine, metadata, connection):
     if not engine.dialect.has_table(engine, 'stations'):
         stations = db.Table('stations', metadata,
                             db.Column('id',             db.Integer(),   primary_key=True),
@@ -77,20 +74,13 @@ def create(dname):
         print('LiDAR Table Created')
 
 
-def insert_lidar(data, stations, lidar, connection, loc):
-    #engine = db.create_engine(dname)
-    #metadata = db.MetaData()
-    #connection = engine.connect()
-    #stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
-    #lidar = db.Table('lidar', metadata, autoload=True, autoload_with=engine)
-
+def insert_lidar(data, loc, connection, stations, lidar):
     query = db.select([stations.columns.id]).where(stations.columns.name == loc)
     ResultProxy = connection.execute(query)
     sid = ResultProxy.fetchall()[0][0]
 
     query = db.insert(lidar)
-    values_list = [] # [{'Id':'2', 'name':'ram', 'salary':80000, 'active':False},
-                     #  {'Id':'3', 'name':'ramesh', 'salary':70000, 'active':True}]
+    values_list = []
 
     if len(data) > 8:
         unix_time = struct.unpack('<q', data[0:8])[0]  # First thing is unix time
@@ -103,17 +93,13 @@ def insert_lidar(data, stations, lidar, connection, loc):
         ResultProxy = connection.execute(query, values_list)
 
 
-def insert_rawgps(data, dname, loc):
-    engine = db.create_engine(dname)
-    metadata = db.MetaData()
-    connection = engine.connect()
-    stations = db.Table('stations', metadata, autoload=True, autoload_with=engine)
-    gps_raw = db.Table('gps_raw', metadata, autoload=True, autoload_with=engine)
-    gps_measurement = db.Table('gps_measurement', metadata, autoload=True, autoload_with=engine)
-
+def insert_rawgps(data, loc, connection, stations, gps_raw, gps_measurement):
     query = db.select([stations.columns.id]).where(stations.columns.name == loc)
     ResultProxy = connection.execute(query)
     sid = ResultProxy.fetchall()[0][0]
+
+    meas_query = db.insert(gps_measurement)
+    meas_list = []
 
     counter = 0
     end = len(data)
@@ -121,7 +107,7 @@ def insert_rawgps(data, dname, loc):
         rcv_tow, week, leap_s, num_meas = struct.unpack('<dHbB', data[counter:counter+12])
 
         query = db.insert(gps_raw).values(rcv_tow=rcv_tow, week=week, leap_seconds=leap_s, station_id=sid)
-        ResultProxy = connection.execute(query)
+        connection.execute(query)
 
         query = db.select([gps_raw.columns.id]).where(
             gps_raw.columns.rcv_tow == rcv_tow and gps_raw.columns.week == week)
@@ -136,11 +122,10 @@ def insert_rawgps(data, dname, loc):
             sig_id = (other >> 3) & 0x07
             cno = other & 0x07
 
-            query = db.insert(gps_measurement).values(pseudorange=pr, carrier_phase=cp, doppler_shift=do,
-                                                      gnss_id=gnss_id, sv_id=sv_id, signal_id=sig_id, cno=cno,
-                                                      gps_raw_id=gpsid)
-            ResultProxy = connection.execute(query)
+            meas_list.append({'pseudorange': pr, 'carrier_phase': cp, 'doppler_shift': do, 'gnss_id': gnss_id,
+                             'sv_id': sv_id, 'signal_id': sig_id, 'cno': cno, 'gps_raw_id': gpsid})
             counter += 22
+    ResultProxy = connection.execute(meas_query, meas_list)
 
 
 def insert_pos(data, dname, loc):

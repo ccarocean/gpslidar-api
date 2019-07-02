@@ -134,7 +134,7 @@ def save_lidar(loc):
         if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
             unix_time = struct.unpack('<q', request.data[0:8])[0]  # First thing is unix time
             num = (len(request.data) - 8) / 6  # Number of measurements
-            sid = stations.query.filter_by(name=loc).all()[-1].id
+            sid = stations.query.filter_by(name=loc).first().id
             list_vals = []
             for i in range(int(num)):
                 t, meas = struct.unpack('<LH', request.data[8 + i * 6:8 + (i + 1) * 6])  # Unpack data
@@ -165,7 +165,7 @@ def save_rawgps(loc):
                 db.session.add(gps_raw(rcv_tow, week, leap_s, sid))
                 db.session.commit()
 
-                gpsid = gps_raw.query.filter_by(rcv_tow=rcv_tow, week=week).last().id
+                gpsid = gps_raw.query.filter_by(rcv_tow=rcv_tow, week=week).all()[-1].id
 
                 counter += 12
                 for i in range(num_meas):

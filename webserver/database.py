@@ -91,6 +91,7 @@ def insert_lidar(data, dname, loc):
     if len(data) > 8:
         unix_time = struct.unpack('<q', data[0:8])[0]  # First thing is unix time
         num = (len(data)-8)/6  # Number of measurements
+        print(num)
         for i in range(int(num)):
             t, meas = struct.unpack('<LH', data[8+i*6:8+(i+1)*6])  # Unpack data
             query = db.insert(lidar).values(unix_time=unix_time + t*10**-6, centimeters=meas, station_id=sid)

@@ -31,7 +31,7 @@ def decode_msg(m, key):
 
 # Create application and api
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ('GPSLIDAR_DATABASE_URI')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['GPSLIDAR_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 

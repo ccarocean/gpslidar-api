@@ -45,13 +45,6 @@ class stations(db.Model):
     altitude = db.Column('altitude', db.Float(), nullable=False)
     file_publickey = db.Column('file_publickey', db.String(255), nullable=False)
 
-    def __init__(self, name, lat, lon, alt, f):
-        self.name = name
-        self.latitude = lat
-        self.longitude = lon
-        self.altitude = alt
-        self.file_publickey = f
-
 
 class lidar(db.Model):
     __tablename__ = 'lidar'
@@ -59,11 +52,6 @@ class lidar(db.Model):
     unix_time = db.Column('unix_time', db.Float(), nullable=False)
     centimeters = db.Column('centimeters', db.Integer(), nullable=False)
     station_id = db.Column('station_id', db.Integer, db.ForeignKey('stations.id'), nullable=False)
-
-    def __init__(self, t, cm, sid):
-        self.unix_time = t
-        self.centimeters = cm
-        self.station_id = sid
 
 
 class gps_raw(db.Model):
@@ -73,12 +61,6 @@ class gps_raw(db.Model):
     week = db.Column('week', db.Integer(), nullable=False)
     leap_seconds = db.Column('leap_seconds', db.Integer(), nullable=False)
     station_id = db.Column('station_id',   db.Integer(), db.ForeignKey('stations.id'), nullable=False)
-
-    def __init__(self, t, week, leap_s, sid):
-        self.rcv_tow = t
-        self.week = week
-        self.leap_seconds = leap_s
-        self.station_id = sid
 
 
 class gps_measurement(db.Model):
@@ -93,16 +75,6 @@ class gps_measurement(db.Model):
     cno = db.Column('cno', db.Integer(), nullable=False)
     gps_raw_id = db.Column('gps_raw_id', db.Integer(), db.ForeignKey('gps_raw.id'), nullable=False)
 
-    def __init__(self, pr, cp, do, gnss_id, sv_id, sig_id, cno, gpsid):
-        self.pseudorange = pr
-        self.carrier_phase = cp
-        self.doppler_shift = do
-        self.gnss_id = gnss_id
-        self.sv_id = sv_id
-        self.signal_id = sig_id
-        self.cno = cno
-        self.gps_raw_id = gpsid
-
 
 class gps_position(db.Model):
     __tablename__ = 'gps_position'
@@ -113,14 +85,6 @@ class gps_position(db.Model):
     latitude = db.Column('latitude', db.Float(), nullable=False)
     height = db.Column('height', db.Float(), nullable=False)
     station_id = db.Column('station_id', db.Integer(), db.ForeignKey('stations.id'), nullable=False)
-
-    def __init__(self, itow, week, lon, lat, height, sid):
-        self.i_tow = itow
-        self.week = week
-        self.longitude = lon
-        self.latitude = lat
-        self.height = height
-        self.station_id = sid
 
 
 @app.route('/lidar/<string:loc>', methods=['POST'])

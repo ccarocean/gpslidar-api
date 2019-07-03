@@ -124,7 +124,7 @@ def save_rawgps(loc):
             while counter < end:
                 rcv_tow, week, leap_s, num_meas = struct.unpack('<dHbB', request.data[counter:counter+12])
 
-                db.session.add(gps_raw(rcv_tow, week, leap_s, sid))
+                db.session.add(gps_raw(rcv_tow=rcv_tow, week=week, leap_seconds=leap_s, station_id=sid))
                 db.session.flush()
 
                 gpsid = gps_raw.query.filter_by(rcv_tow=rcv_tow, week=week).all()[-1].id
@@ -154,7 +154,8 @@ def save_position(loc):
         if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
             sid = stations.query.filter_by(name=loc).first().id
             i_tow, week, lon, lat, height = struct.unpack('<IHddd', request.data)
-            db.session.add(gps_position(i_tow, week, lon, lat, height, sid))
+            db.session.add(gps_position(i_tow=i_tow, week=week, longitude=lon, latitude=lat, height=height,
+                                        station_id=sid))
             db.session.commit()
             return '', 201
     return '', 404

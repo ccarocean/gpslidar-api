@@ -168,8 +168,8 @@ def factory():
         data = json.load(f)
     for i in data:
         if not stations.query.filter_by(name=i).first():
-            db.session.add(stations(i, data[i]['latitude'], data[i]['longitude'], data[i]['altitude'],
-                                    './keys/' + i + '.key.pub'))
+            db.session.add(stations(name=i, latitude=data[i]['latitude'], longitude=data[i]['longitude'],
+                                    altitude=data[i]['altitude'], file_publickey='./keys/' + i + '.key.pub'))
             db.session.commit()
     return app
 

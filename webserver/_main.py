@@ -1,5 +1,6 @@
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import IntegrityError
 import struct
 import json
 import jwt
@@ -39,11 +40,14 @@ db = SQLAlchemy(app)
 class stations(db.Model):
     __tablename__ = 'stations'
     id = db.Column('id', db.Integer(), primary_key=True)
-    name = db.Column('name', db.String(4), nullable=False)
+    name = db.Column('name', db.String(4), nullable=False, unique=True)
     latitude = db.Column('latitude', db.Float(), nullable=False)
     longitude = db.Column('longitude', db.Float(), nullable=False)
     altitude = db.Column('altitude', db.Float(), nullable=False)
     file_publickey = db.Column('file_publickey', db.String(255), nullable=False)
+    lidars = db.relationship('lidar', backref='station', lazy=True)
+    gps_raws = db.relationship('gps_raw', backref='station', lazy=True)
+    gps_positions = db.relationship('gps_position', backref='station', lazy=True)
 
 
 class lidar(db.Model):
@@ -52,6 +56,7 @@ class lidar(db.Model):
     unix_time = db.Column('unix_time', db.Float(), nullable=False)
     centimeters = db.Column('centimeters', db.Integer(), nullable=False)
     station_id = db.Column('station_id', db.Integer, db.ForeignKey('stations.id'), nullable=False)
+    __table_args__ = (db.UniqueConstraint('unix_time', 'station_id', name='time_station'),)
 
 
 class gps_raw(db.Model):
@@ -61,6 +66,8 @@ class gps_raw(db.Model):
     week = db.Column('week', db.Integer(), nullable=False)
     leap_seconds = db.Column('leap_seconds', db.Integer(), nullable=False)
     station_id = db.Column('station_id',   db.Integer(), db.ForeignKey('stations.id'), nullable=False)
+    measurements = db.relationship('gps_measurement', backref='gps_raw', lazy=True)
+    __table_args__ = (db.UniqueConstraint('rcv_tow', 'week', 'station_id', name='time_station'),)
 
 
 class gps_measurement(db.Model):
@@ -74,6 +81,7 @@ class gps_measurement(db.Model):
     signal_id = db.Column('signal_id', db.Integer(), nullable=False)
     cno = db.Column('cno', db.Integer(), nullable=False)
     gps_raw_id = db.Column('gps_raw_id', db.Integer(), db.ForeignKey('gps_raw.id'), nullable=False)
+    __table_args__ = (db.UniqueConstraint('gps_raw_id', 'gnss_id', 'sig_id', name='sat_measurement'),)
 
 
 class gps_position(db.Model):
@@ -85,39 +93,50 @@ class gps_position(db.Model):
     latitude = db.Column('latitude', db.Float(), nullable=False)
     height = db.Column('height', db.Float(), nullable=False)
     station_id = db.Column('station_id', db.Integer(), db.ForeignKey('stations.id'), nullable=False)
+    __table_args__ = (db.UniqueConstraint('i_tow', 'week', 'station_id', name='time_station'),)
 
 
 @app.route('/lidar/<string:loc>', methods=['POST'])
 def save_lidar(loc):
     """ Class for handling LiDAR post api request. """
-    if request.method == 'POST' and len(request.data) > 8:
+    if len(request.data) > 8 and request.headers['Content-Type'] == "application/octet-stream":
         key = read_key(stations.query.filter_by(name=loc).first().file_publickey)
         signature = request.headers['Bearer']
 
-        if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
+        if decode_msg(signature, key):
             unix_time = struct.unpack('<q', request.data[0:8])[0]  # First thing is unix time
             num = (len(request.data) - 8) / 6  # Number of measurements
-            sid = stations.query.filter_by(name=loc).first().id
+            sid = stations.query.filter_by(name=loc).first()
+            if not sid:
+                return '', 404
+            sid = sid.id
+
             list_vals = []
             for i in range(int(num)):
                 t, meas = struct.unpack('<LH', request.data[8 + i * 6:8 + (i + 1) * 6])  # Unpack data
                 list_vals.append({'unix_time': unix_time + t * 10**-6, 'centimeters': meas, 'station_id': sid})
-
-            db.session.bulk_insert_mappings(lidar, list_vals)
-            db.session.commit()
+            try:
+                db.session.bulk_insert_mappings(lidar, list_vals)
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
             return '', 201
-    return '', 404
+        return '', 401
+    return '', 400
 
 
 @app.route('/rawgps/<string:loc>', methods=['POST'])
 def save_rawgps(loc):
-    if request.method == 'POST':
-        key = read_key(stations.query.filter_by(name=loc).first().file_publickey)
-        signature = request.headers['Bearer']
+    key = read_key(stations.query.filter_by(name=loc).first().file_publickey)
+    signature = request.headers['Bearer']
 
-        if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
+    if decode_msg(signature, key):
+        if request.headers['Content-Type'] == "application/octet-stream":
             meas_list = []
-            sid = stations.query.filter_by(name=loc).first().id
+            sid = stations.query.filter_by(name=loc).first()
+            if not sid:
+                return '', 404
+            sid = sid.id
 
             counter = 0
             end = len(request.data)
@@ -139,26 +158,38 @@ def save_rawgps(loc):
                     meas_list.append({'pseudorange': pr, 'carrier_phase': cp, 'doppler_shift': do, 'gnss_id': gnss_id,
                                      'sv_id': sv_id, 'signal_id': sig_id, 'cno': cno, 'gps_raw_id': gpsid})
                     counter += 22
-            db.session.bulk_insert_mappings(gps_measurement, meas_list)
-            db.session.commit()
+            try:
+                db.session.bulk_insert_mappings(gps_measurement, meas_list)
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
             return '', 201
-    return '', 404
+        return '', 400
+    return '', 401
 
 
 @app.route('/posgps/<string:loc>', methods=['POST'])
 def save_position(loc):
-    if request.method == 'POST' and len(request.data) == 30:
+    if len(request.data) == 30 and request.headers['Content-Type'] == "application/octet-stream":
         key = read_key(stations.query.filter_by(name=loc).first().file_publickey)
         signature = request.headers['Bearer']
 
-        if decode_msg(signature, key) and request.headers['Content-Type'] == "application/octet-stream":
-            sid = stations.query.filter_by(name=loc).first().id
+        if decode_msg(signature, key):
+            sid = stations.query.filter_by(name=loc).first()
+            if not sid:
+                return '', 404
+            sid = sid.id
+
             i_tow, week, lon, lat, height = struct.unpack('<IHddd', request.data)
-            db.session.add(gps_position(i_tow=i_tow, week=week, longitude=lon, latitude=lat, height=height,
-                                        station_id=sid))
-            db.session.commit()
+            try:
+                db.session.add(gps_position(i_tow=i_tow, week=week, longitude=lon, latitude=lat, height=height,
+                                            station_id=sid))
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
             return '', 201
-    return '', 404
+        return '', 401
+    return '', 400
 
 
 def factory():
@@ -167,9 +198,19 @@ def factory():
     with open(jsonfile, 'r') as f:
         data = json.load(f)
     for i in data:
-        if not stations.query.filter_by(name=i).first():
-            db.session.add(stations(name=i, latitude=data[i]['latitude'], longitude=data[i]['longitude'],
-                                    altitude=data[i]['altitude'], file_publickey='./keys/' + i + '.key.pub'))
+        if stations.query.filter_by(name=i).count() == 0:
+            s = stations(name=i, latitude=data[i]['latitude'], longitude=data[i]['longitude'],
+                         altitude=data[i]['altitude'], file_publickey='./keys/' + i + '.key.pub')
+            db.session.begin_nested()
+            try:
+                db.session.add(s)
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+        else:
+            s = stations.query.filter_by(name=i).one()
+
+            db.session.add(s)
             db.session.commit()
     return app
 

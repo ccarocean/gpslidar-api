@@ -1,42 +1,16 @@
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 import struct
-import os
-import jwt
-import datetime as dt
+from .resources import read_key, decode_msg
 import json
+import os
 
-
-dname = 'sqlite:////home/ccaruser/gpslidar4.db'
 
 # Create application and api
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = dname
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ('GPSLIDAR_DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-
-
-def read_key(fname):
-    """ Function to read key from file. """
-    try:
-        with open(fname, 'r') as f:
-            key = f.read()
-    except FileNotFoundError:
-        print('Incorrect key file location. ')
-        os._exit(1)
-    return key
-
-
-def decode_msg(m, key):
-    """ Function to decode message with the key. """
-    try:
-        time = jwt.decode(m, key, algorithm='RS256')['t']
-        td = ((dt.datetime.utcnow() - dt.datetime(1970, 1, 1)).total_seconds() - float(time))
-    except:
-        return False
-    if td < 10:
-        return True
-    return False
 
 
 class stations(db.Model):
@@ -199,7 +173,7 @@ def save_position(loc):
     return '', 404
 
 
-def main():
+def factory():
     db.create_all()
     jsonfile = './stations.json'
     with open(jsonfile, 'r') as f:
@@ -209,4 +183,9 @@ def main():
             db.session.add(stations(i, data[i]['latitude'], data[i]['longitude'], data[i]['altitude'],
                                     './keys/' + i + '.key.pub'))
             db.session.commit()
-    app.run(debug=False)  # Run web server
+    return app
+
+
+def main():
+    app = factory()
+    app.run(debug=True)

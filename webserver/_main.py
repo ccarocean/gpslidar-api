@@ -192,31 +192,29 @@ def save_position(loc):
     return '', 400
 
 
-def factory():
-    db.init_app(app)
+def init_db(app, db):
     db.create_all()
-    jsonfile = './stations.json'
-    with open(jsonfile, 'r') as f:
-        data = json.load(f)
-    for i in data:
-        if stations.query.filter_by(name=i).count() == 0:
-            s = stations(name=i, latitude=data[i]['latitude'], longitude=data[i]['longitude'],
-                         altitude=data[i]['altitude'], file_publickey='./keys/' + i + '.key.pub')
-            db.session.begin_nested()
-            try:
+    with app.app_context():
+        jsonfile = './stations.json'
+        with open(jsonfile, 'r') as f:
+            data = json.load(f)
+        for i in data:
+            if stations.query.filter_by(name=i).count() == 0:
+                s = stations(name=i, latitude=data[i]['latitude'], longitude=data[i]['longitude'],
+                             altitude=data[i]['altitude'], file_publickey='./keys/' + i + '.key.pub')
+                try:
+                    db.session.add(s)
+                    db.session.commit()
+                    print(f'added {i}')
+                except IntegrityError:
+                    db.session.rollback()
+            else:
+                s = stations.query.filter_by(name=i).one()
+
                 db.session.add(s)
                 db.session.commit()
-            except IntegrityError:
-                db.session.rollback()
-        else:
-            s = stations.query.filter_by(name=i).one()
 
-            db.session.add(s)
-            db.session.commit()
-    return app
-
+init_db(app, db)
 
 def main():
-    app = factory()
-    db.init_app(app)
     app.run(debug=True)

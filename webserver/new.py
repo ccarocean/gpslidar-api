@@ -30,11 +30,19 @@ def decode_msg(m, key):
         return True
     return False
 
-# Create application and api
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['GPSLIDAR_DATABASE_URI']
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+
+def factory():
+    # Create application and api
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['GPSLIDAR_DATABASE_URI']
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db = SQLAlchemy(app)
+    db.init_app(app)
+    db.create_all()
+    return app, db
+
+
+app, db = factory()
 
 
 class stations(db.Model):
@@ -192,9 +200,8 @@ def save_position(loc):
     return '', 400
 
 
-def factory():
+def main():
     db.init_app(app)
-    db.create_all()
     jsonfile = './stations.json'
     with open(jsonfile, 'r') as f:
         data = json.load(f)
@@ -213,10 +220,5 @@ def factory():
 
             db.session.add(s)
             db.session.commit()
-    return app
 
-
-def main():
-    app = factory()
-    db.init_app(app)
     app.run(debug=True)

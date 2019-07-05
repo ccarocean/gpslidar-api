@@ -56,7 +56,7 @@ class lidar(db.Model):
     unix_time = db.Column('unix_time', db.Float(), nullable=False)
     centimeters = db.Column('centimeters', db.Integer(), nullable=False)
     station_id = db.Column('station_id', db.Integer, db.ForeignKey('stations.id'), nullable=False)
-    __table_args__ = (db.UniqueConstraint('unix_time', 'station_id', name='time_station'),)
+    __table_args__ = (db.UniqueConstraint('unix_time', 'station_id', name='time_station_lidar'),)
 
 
 class gps_raw(db.Model):
@@ -67,7 +67,7 @@ class gps_raw(db.Model):
     leap_seconds = db.Column('leap_seconds', db.Integer(), nullable=False)
     station_id = db.Column('station_id',   db.Integer(), db.ForeignKey('stations.id'), nullable=False)
     measurements = db.relationship('gps_measurement', backref='gps_raw', lazy=True)
-    __table_args__ = (db.UniqueConstraint('rcv_tow', 'week', 'station_id', name='time_station'),)
+    __table_args__ = (db.UniqueConstraint('rcv_tow', 'week', 'station_id', name='time_station_raw'),)
 
 
 class gps_measurement(db.Model):
@@ -93,7 +93,7 @@ class gps_position(db.Model):
     latitude = db.Column('latitude', db.Float(), nullable=False)
     height = db.Column('height', db.Float(), nullable=False)
     station_id = db.Column('station_id', db.Integer(), db.ForeignKey('stations.id'), nullable=False)
-    __table_args__ = (db.UniqueConstraint('i_tow', 'week', 'station_id', name='time_station'),)
+    __table_args__ = (db.UniqueConstraint('i_tow', 'week', 'station_id', name='time_station_pos'),)
 
 
 @app.route('/lidar/<string:loc>', methods=['POST'])

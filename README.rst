@@ -19,7 +19,7 @@ Inside Virtual Environment:
 
 .. code-block::
 
-    setup.py install
+    python setup.py install
 
 
 How to run
@@ -40,9 +40,6 @@ Run:
 Related Files
 -------------
 - Public keys for station must be located in ./keys/
-- LiDAR data directory must exist at /srv/data/gpslidar/lidar
-- Raw GPS data directory must exist at /srv/data/gpslidar/rawgps
-- GPS position data directory must exist at /srv/data/gpslidar/position
 - Stations must be kept in json file in same directory as program (./stations.json)
 
 

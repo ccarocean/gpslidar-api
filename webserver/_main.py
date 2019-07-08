@@ -63,7 +63,7 @@ class lidar(db.Model):
 class gps_raw(db.Model):
     __tablename__ = 'gps_raw'
     id = db.Column('id', db.Integer, primary_key=True)
-    rcv_tow = db.Column('rcv_tow', db.Integer(), nullable=False)
+    rcv_tow = db.Column('rcv_tow', db.Float(), nullable=False)
     week = db.Column('week', db.Integer(), nullable=False)
     leap_seconds = db.Column('leap_seconds', db.Integer(), nullable=False)
     station_id = db.Column('station_id',   db.Integer(), db.ForeignKey('stations.id'), nullable=False)
@@ -144,8 +144,6 @@ def save_rawgps(loc):
             while counter < end:
                 rcv_tow, week, leap_s, num_meas = struct.unpack('<dHbB', request.data[counter:counter+12])
 
-                print(rcv_tow, week, leap_s, num_meas)
-
                 tmp = gps_raw(rcv_tow=rcv_tow, week=week, leap_seconds=leap_s, station_id=sid)
                 db.session.add(tmp)
                 db.session.flush()
@@ -167,6 +165,7 @@ def save_rawgps(loc):
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
+                return '', 400
             return '', 201
         return '', 400
     return '', 401

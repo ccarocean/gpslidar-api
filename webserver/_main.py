@@ -157,15 +157,13 @@ def save_rawgps(loc):
                     sv_id = (other >> 6) & 0x3f
                     sig_id = (other >> 3) & 0x07
                     cno = other & 0x07
-                    print(gnss_id, sv_id, sig_id, cno)
                     meas_list.append({'pseudorange': pr, 'carrier_phase': cp, 'doppler_shift': do, 'gnss_id': gnss_id,
                                      'sv_id': sv_id, 'signal_id': sig_id, 'cno': cno, 'gps_raw_id': gpsid})
                     counter += 22
             try:
                 db.session.bulk_insert_mappings(gps_measurement, meas_list)
                 db.session.commit()
-            except IntegrityError as e:
-                print(e)
+            except IntegrityError:
                 db.session.rollback()
                 return '', 400
             return '', 201

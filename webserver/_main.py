@@ -205,7 +205,8 @@ def init_db(app, db):
         for i in data:
             if stations.query.filter_by(name=i).count() == 0:
                 s = stations(name=i, latitude=data[i]['latitude'], longitude=data[i]['longitude'],
-                             altitude=data[i]['altitude'], file_publickey='./keys/' + i + '.key.pub')
+                             altitude=data[i]['altitude'], file_publickey='./keys/' + i + '.key.pub',
+                             longname=data[i]['longname'])
                 try:
                     db.session.add(s)
                     db.session.commit()

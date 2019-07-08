@@ -46,6 +46,7 @@ class stations(db.Model):
     longitude = db.Column('longitude', db.Float(), nullable=False)
     altitude = db.Column('altitude', db.Float(), nullable=False)
     file_publickey = db.Column('file_publickey', db.String(255), nullable=False)
+    longname = db.Column('longname', db.String(255), nullable=False)
     lidars = db.relationship('lidar', backref='station', lazy=True)
     gps_raws = db.relationship('gps_raw', backref='station', lazy=True)
     gps_positions = db.relationship('gps_position', backref='station', lazy=True)

@@ -82,7 +82,7 @@ class gps_measurement(db.Model):
     signal_id = db.Column('signal_id', db.Integer(), nullable=False)
     cno = db.Column('cno', db.Integer(), nullable=False)
     gps_raw_id = db.Column('gps_raw_id', db.Integer(), db.ForeignKey('gps_raw.id'), nullable=False)
-    __table_args__ = (db.UniqueConstraint('gps_raw_id', 'gnss_id', 'signal_id', name='sat_measurement'),)
+    __table_args__ = (db.UniqueConstraint('gps_raw_id', 'gnss_id', 'sv_id', 'signal_id', name='sat_measurement'),)
 
 
 class gps_position(db.Model):

@@ -144,10 +144,13 @@ def save_rawgps(loc):
             while counter < end:
                 rcv_tow, week, leap_s, num_meas = struct.unpack('<dHbB', request.data[counter:counter+12])
 
-                db.session.add(gps_raw(rcv_tow=rcv_tow, week=week, leap_seconds=leap_s, station_id=sid))
-                db.session.flush()
+                print(rcv_tow, week, leap_s, num_meas)
 
-                gpsid = gps_raw.query.filter_by(rcv_tow=rcv_tow, week=week).all()[0].id
+                tmp = gps_raw(rcv_tow=rcv_tow, week=week, leap_seconds=leap_s, station_id=sid)
+                db.session.add(tmp)
+                db.session.flush()
+                db.session.refresh(tmp)
+                gpsid = tmp.id
 
                 counter += 12
                 for i in range(num_meas):

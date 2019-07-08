@@ -30,6 +30,7 @@ def decode_msg(m, key):
         return True
     return False
 
+
 # Create application and api
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['GPSLIDAR_DATABASE_URI']
@@ -144,7 +145,7 @@ def save_rawgps(loc):
                 rcv_tow, week, leap_s, num_meas = struct.unpack('<dHbB', request.data[counter:counter+12])
 
                 db.session.add(gps_raw(rcv_tow=rcv_tow, week=week, leap_seconds=leap_s, station_id=sid))
-                db.session.flush()
+                db.session.commit()
 
                 gpsid = gps_raw.query.filter_by(rcv_tow=rcv_tow, week=week).all()[-1].id
 
@@ -214,7 +215,9 @@ def init_db(app, db):
                 db.session.add(s)
                 db.session.commit()
 
+
 init_db(app, db)
+
 
 def main():
     app.run(debug=True)

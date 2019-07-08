@@ -145,6 +145,7 @@ def save_rawgps(loc):
                 rcv_tow, week, leap_s, num_meas = struct.unpack('<dHbB', request.data[counter:counter+12])
 
                 tmp = gps_raw(rcv_tow=rcv_tow, week=week, leap_seconds=leap_s, station_id=sid)
+                print(tmp)
                 db.session.add(tmp)
                 db.session.flush()
                 db.session.refresh(tmp)
@@ -164,6 +165,7 @@ def save_rawgps(loc):
                 db.session.bulk_insert_mappings(gps_measurement, meas_list)
                 db.session.commit()
             except IntegrityError:
+                print('Integrity Error')
                 db.session.rollback()
                 return '', 400
             return '', 201

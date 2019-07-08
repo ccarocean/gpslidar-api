@@ -3,9 +3,6 @@ Web server for receiving and analyzing LiDAR and GPS Data
 
 Title: gpslidar-api
 
-Options
--------
-
 Installation
 ------------
 Create and source virtual environment:

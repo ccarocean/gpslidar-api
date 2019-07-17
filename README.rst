@@ -36,7 +36,7 @@ Run:
 
 Related Files
 -------------
-- Public keys for station must be located in ./keys/
+- Public keys for stations must be located in ./keys/
 - Stations must be kept in json file in same directory as program (./stations.json)
 
 

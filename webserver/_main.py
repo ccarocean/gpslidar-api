@@ -54,7 +54,7 @@ class stations(db.Model):
 
 class lidar(db.Model):
     __tablename__ = 'lidar'
-    id = db.Column('id', db.Integer, primary_key=True)
+    id = db.Column('id', db.BigInteger, primary_key=True)
     unix_time = db.Column('unix_time', db.Float(), nullable=False)
     centimeters = db.Column('centimeters', db.Integer(), nullable=False)
     station_id = db.Column('station_id', db.Integer, db.ForeignKey('stations.id'), nullable=False)
@@ -63,7 +63,7 @@ class lidar(db.Model):
 
 class gps_raw(db.Model):
     __tablename__ = 'gps_raw'
-    id = db.Column('id', db.Integer, primary_key=True)
+    id = db.Column('id', db.BigInteger, primary_key=True)
     rcv_tow = db.Column('rcv_tow', db.Float(), nullable=False)
     week = db.Column('week', db.Integer(), nullable=False)
     leap_seconds = db.Column('leap_seconds', db.Integer(), nullable=False)
@@ -74,7 +74,7 @@ class gps_raw(db.Model):
 
 class gps_measurement(db.Model):
     __tablename__ = 'gps_measurement'
-    id = db.Column('id', db.Integer, primary_key=True)
+    id = db.Column('id', db.BigInteger, primary_key=True)
     pseudorange = db.Column('pseudorange', db.Float(), nullable=False)
     carrier_phase = db.Column('carrier_phase', db.Float(), nullable=False)
     doppler_shift = db.Column('doppler_shift', db.Float(), nullable=False)
@@ -88,7 +88,7 @@ class gps_measurement(db.Model):
 
 class gps_position(db.Model):
     __tablename__ = 'gps_position'
-    id = db.Column('id', db.Integer(), primary_key=True)
+    id = db.Column('id', db.BigInteger(), primary_key=True)
     i_tow = db.Column('i_tow', db.Integer(), nullable=False)
     week = db.Column('week', db.Integer(), nullable=False)
     longitude = db.Column('longitude', db.Float(), nullable=False)
